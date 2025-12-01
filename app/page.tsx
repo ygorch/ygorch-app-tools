@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Image } from "lucide-react";
+import { Image, Gift } from "lucide-react";
 import { useLanguage } from "./hooks/useLanguage";
 
 export default function Home() {
@@ -15,6 +15,14 @@ export default function Home() {
       // Glassmorphism style for the icon background
       color: "bg-white/5 backdrop-blur-xl border border-white/10 group-hover:bg-white/10 group-hover:border-white/20",
       href: "/image-reducer",
+      notification: 0,
+    },
+    {
+      id: "wishlist",
+      name: "Wishlist",
+      icon: <Gift className="w-8 h-8 text-pink-200" />,
+      color: "bg-white/5 backdrop-blur-xl border border-white/10 group-hover:bg-white/10 group-hover:border-white/20",
+      href: "/wishlist",
       notification: 0,
     },
   ];
