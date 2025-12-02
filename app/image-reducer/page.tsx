@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useLanguage } from "../hooks/useLanguage";
-import { ArrowLeft, Upload, Download, Trash2, X } from "lucide-react";
-import Link from "next/link";
+import { Upload, Download, Trash2 } from "lucide-react";
 import { processImage, estimateDimensionsForCompression, ImageProcessOptions } from "../utils/imageProcessor";
 import { saveToHistory, getHistory, deleteFromHistory, clearHistory } from "../utils/historyStorage";
+import { Header } from "../components/ui/Header";
+import { PageTransition } from "../components/ui/PageTransition";
 
 // Define locally to match history storage type
 interface HistoryItem {
@@ -49,7 +50,6 @@ export default function ImageReducer() {
   };
 
   const updateEstimates = async (f: File) => {
-    const targets = ['200kb', '500kb', '1mb', '2mb'];
     // Optimization: Calculate for selected only first for responsiveness
     const dim = await estimateDimensionsForCompression(f, compressTarget);
     setEstimates(prev => ({ ...prev, [compressTarget]: dim }));
@@ -146,14 +146,10 @@ export default function ImageReducer() {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        <Link href="/" className="inline-flex items-center text-gray-400 hover:text-white transition-colors mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          {t.imageReducer.back}
-        </Link>
+    <div className="min-h-screen">
+      <Header title={t.imageReducer.title} />
 
-        <h1 className="text-3xl font-light text-white mb-8 drop-shadow-lg">{t.imageReducer.title}</h1>
+      <PageTransition className="px-4 md:px-8 pb-4 md:pb-8 pt-32 max-w-4xl mx-auto">
 
         <div className="glass-panel rounded-3xl p-6 mb-8">
           {/* Upload Area */}
@@ -347,7 +343,7 @@ export default function ImageReducer() {
             </div>
           </div>
         )}
-      </div>
+      </PageTransition>
     </div>
   );
 }

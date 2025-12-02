@@ -8,8 +8,11 @@ import { Modal } from '@/app/components/ui/Modal';
 import { IconPicker } from '@/app/components/ui/IconPicker';
 import { ColorPicker } from '@/app/components/ui/ColorPicker';
 import { getAllLists, saveList, deleteList, WishlistList } from '@/app/utils/db';
+import { Header } from '@/app/components/ui/Header';
+import { PageTransition } from '@/app/components/ui/PageTransition';
 import * as LucideIcons from 'lucide-react';
 import imageCompression from 'browser-image-compression';
+import { motion } from 'framer-motion';
 
 export default function WishlistHome() {
   const [lists, setLists] = useState<WishlistList[]>([]);
@@ -133,23 +136,25 @@ export default function WishlistHome() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white p-8">
-      <div className="max-w-6xl mx-auto">
-        <header className="flex flex-col items-center justify-center mb-10 text-center space-y-6">
+    <div className="min-h-screen bg-neutral-950 text-white">
+      <Header title="My Wishlists" />
+
+      <PageTransition className="px-8 pb-8 pt-32 max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-10">
           <div>
-            <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
-              My Wishlists
-            </h1>
-            <p className="text-neutral-400 mt-2">Organize your dreams and desires.</p>
+             <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
+               Collections
+             </h1>
+             <p className="text-neutral-400 text-sm mt-1">Manage your organized lists</p>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-8 py-3 bg-white text-black font-semibold rounded-full hover:bg-neutral-200 transition-colors flex items-center gap-2 shadow-lg hover:scale-105 transform duration-200"
+            className="px-6 py-2.5 bg-white text-black font-semibold rounded-full hover:bg-neutral-200 transition-colors flex items-center gap-2 shadow-lg hover:scale-105 transform duration-200"
           >
-            <LucideIcons.Plus size={20} />
+            <LucideIcons.Plus size={18} />
             New List
           </button>
-        </header>
+        </div>
 
         {isLoading ? (
           <div className="text-center text-neutral-500 py-20">Loading...</div>
@@ -160,72 +165,80 @@ export default function WishlistHome() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {lists.map((list) => {
+            {lists.map((list, index) => {
               // @ts-expect-error - Dynamic icon lookup
               const Icon = LucideIcons[list.iconName]; // || LucideIcons.Gift; // Don't default if it's an emoji
               const thumbUrl = list.thumbnailBlob ? URL.createObjectURL(list.thumbnailBlob) : null;
               const isEmoji = !Icon;
 
               return (
-                <Link href={`/wishlist/${list.id}`} key={list.id} className="block group">
-                  <GlassCard className="h-full relative overflow-hidden flex flex-col gap-4">
-                     {/* Actions */}
-                    <div className="absolute top-4 right-4 flex gap-2 z-10">
-                       <button
-                        onClick={(e) => handleEditList(e, list)}
-                        className="p-2 bg-black/50 hover:bg-blue-600/80 rounded-full backdrop-blur-sm text-white transition-colors md:opacity-0 group-hover:opacity-100"
-                        title="Edit"
-                      >
-                        <LucideIcons.Edit2 size={16} />
-                      </button>
-                      <button
-                        onClick={(e) => handleDuplicate(e, list)}
-                        className="p-2 bg-black/50 hover:bg-black/80 rounded-full backdrop-blur-sm text-white transition-colors md:opacity-0 group-hover:opacity-100"
-                        title="Duplicate"
-                      >
-                        <LucideIcons.Copy size={16} />
-                      </button>
-                      <button
-                        onClick={(e) => handleDelete(e, list.id)}
-                        className="p-2 bg-red-500/80 hover:bg-red-600 rounded-full backdrop-blur-sm text-white transition-colors md:opacity-0 group-hover:opacity-100"
-                        title="Delete"
-                      >
-                        <LucideIcons.Trash2 size={16} />
-                      </button>
-                    </div>
+                <motion.div
+                  key={list.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <Link href={`/wishlist/${list.id}`} className="block group">
+                    <GlassCard className="h-full relative overflow-hidden flex flex-col gap-4 border border-white/5 hover:border-white/10 transition-colors">
+                      {/* Actions */}
+                      <div className="absolute top-4 right-4 flex gap-2 z-10">
+                        <button
+                          onClick={(e) => handleEditList(e, list)}
+                          className="p-2 bg-black/50 hover:bg-blue-600/80 rounded-full backdrop-blur-sm text-white transition-colors md:opacity-0 group-hover:opacity-100"
+                          title="Edit"
+                        >
+                          <LucideIcons.Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={(e) => handleDuplicate(e, list)}
+                          className="p-2 bg-black/50 hover:bg-black/80 rounded-full backdrop-blur-sm text-white transition-colors md:opacity-0 group-hover:opacity-100"
+                          title="Duplicate"
+                        >
+                          <LucideIcons.Copy size={16} />
+                        </button>
+                        <button
+                          onClick={(e) => handleDelete(e, list.id)}
+                          className="p-2 bg-red-500/80 hover:bg-red-600 rounded-full backdrop-blur-sm text-white transition-colors md:opacity-0 group-hover:opacity-100"
+                          title="Delete"
+                        >
+                          <LucideIcons.Trash2 size={16} />
+                        </button>
+                      </div>
 
-                    {/* Header / Thumbnail */}
-                    <div className={`h-32 w-full rounded-xl flex items-center justify-center relative overflow-hidden ${list.color} bg-opacity-20`}>
-                      <div className={`absolute inset-0 ${list.color} opacity-20`}></div>
-                      {thumbUrl ? (
-                         <Image
-                           src={thumbUrl}
-                           alt={list.title}
-                           fill
-                           className="object-cover"
-                         />
-                      ) : (
-                        isEmoji ? (
-                            <span className="text-5xl">{list.iconName}</span>
+                      {/* Header / Thumbnail */}
+                      <div className={`h-32 w-full rounded-xl flex items-center justify-center relative overflow-hidden ${list.color} bg-opacity-20`}>
+                        <div className={`absolute inset-0 ${list.color} opacity-20`}></div>
+                        {thumbUrl ? (
+                          <Image
+                            src={thumbUrl}
+                            alt={list.title}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
                         ) : (
-                            <Icon size={48} className="text-white/50" />
-                        )
-                      )}
-                    </div>
+                          isEmoji ? (
+                              <span className="text-5xl scale-100 group-hover:scale-110 transition-transform duration-300">{list.iconName}</span>
+                          ) : (
+                              <Icon size={48} className="text-white/50 group-hover:text-white/70 transition-colors" />
+                          )
+                        )}
+                      </div>
 
-                    {/* Content */}
-                    <div>
-                      <h3 className="text-xl font-bold truncate">{list.title}</h3>
-                      <p className="text-neutral-400 text-sm line-clamp-2 mt-1">
-                        {list.description || 'No description'}
-                      </p>
-                    </div>
+                      {/* Content */}
+                      <div>
+                        <h3 className="text-xl font-bold truncate group-hover:text-blue-200 transition-colors">{list.title}</h3>
+                        <p className="text-neutral-400 text-sm line-clamp-2 mt-1">
+                          {list.description || 'No description'}
+                        </p>
+                      </div>
 
-                    <div className="mt-auto text-xs text-neutral-500">
-                      Created: {new Date(list.createdAt).toLocaleDateString()}
-                    </div>
-                  </GlassCard>
-                </Link>
+                      <div className="mt-auto text-xs text-neutral-500 flex items-center gap-1">
+                        <LucideIcons.Clock size={12} />
+                        {new Date(list.createdAt).toLocaleDateString()}
+                      </div>
+                    </GlassCard>
+                  </Link>
+                </motion.div>
               );
             })}
           </div>
@@ -313,7 +326,7 @@ export default function WishlistHome() {
             </button>
           </form>
         </Modal>
-      </div>
+      </PageTransition>
     </div>
   );
 }
