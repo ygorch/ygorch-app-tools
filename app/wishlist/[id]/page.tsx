@@ -216,6 +216,59 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
     });
   };
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImportClick = () => {
+      fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+          const text = await file.text();
+          const importedItems = JSON.parse(text);
+
+          if (!Array.isArray(importedItems)) {
+              alert('Invalid format: JSON must be an array of items.');
+              return;
+          }
+
+          let addedCount = 0;
+          for (const item of importedItems) {
+              if (!item.title) continue;
+
+              // Check if item ID already exists in current list
+              const exists = items.some(existing => existing.id === item.id);
+              if (exists) continue;
+
+              const newItem: WishlistItem = {
+                  ...item,
+                  id: item.id || crypto.randomUUID(), // Use existing ID or generate new
+                  listId: id, // Force current list ID
+                  createdAt: item.createdAt || getNow(),
+              };
+
+              await saveItem(newItem);
+              addedCount++;
+          }
+
+          if (addedCount > 0) {
+              await loadData();
+              alert(`Successfully imported ${addedCount} new items.`);
+          } else {
+              alert('No new items found to import.');
+          }
+
+      } catch (error) {
+          console.error('Import error:', error);
+          alert('Failed to import file. Please check if it is a valid JSON.');
+      } finally {
+          if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+  };
+
 
   if (!list) return null;
 
@@ -346,7 +399,24 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
 
         {/* Export & Share Actions (Bottom) */}
         <div className="mt-12 pt-8 flex justify-center">
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept=".json"
+                className="hidden"
+            />
             <div className="flex items-center bg-neutral-900/80 backdrop-blur-xl border border-white/10 rounded-2xl p-2 gap-1 shadow-2xl">
+                <button
+                    onClick={handleImportClick}
+                    title="Import JSON"
+                    className="p-3 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-xl transition-all hover:scale-105 active:scale-95"
+                >
+                    <LucideIcons.Upload size={20} />
+                </button>
+
+                <div className="w-px h-8 bg-white/10 mx-2"></div>
+
                 <button
                     onClick={exportToCSV}
                     title="Export CSV"
