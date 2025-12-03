@@ -345,19 +345,40 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
         </div>
 
         {/* Export & Share Actions (Bottom) */}
-        <div className="mt-12 pt-8 border-t border-white/10 flex flex-wrap justify-center gap-3">
-            <button onClick={exportToCSV} className="px-5 py-3 bg-white/5 hover:bg-white/10 rounded-xl font-medium border border-white/10 flex items-center gap-2 transition-colors">
-                <LucideIcons.FileSpreadsheet size={16} /> Export CSV
-            </button>
-            <button onClick={exportToJSON} className="px-5 py-3 bg-white/5 hover:bg-white/10 rounded-xl font-medium border border-white/10 flex items-center gap-2 transition-colors">
-                <LucideIcons.FileJson size={16} /> Export JSON
-            </button>
-            <button onClick={exportToXLSX} className="px-5 py-3 bg-white/5 hover:bg-white/10 rounded-xl font-medium border border-white/10 flex items-center gap-2 transition-colors">
-                <LucideIcons.Sheet size={16} /> Export Excel
-            </button>
-            <button onClick={shareToWhatsapp} className="px-5 py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-medium flex items-center gap-2 shadow-lg shadow-green-900/20 transition-all hover:scale-105">
-                <LucideIcons.Share2 size={16} /> Share List
-            </button>
+        <div className="mt-12 pt-8 flex justify-center">
+            <div className="flex items-center bg-neutral-900/80 backdrop-blur-xl border border-white/10 rounded-2xl p-2 gap-1 shadow-2xl">
+                <button
+                    onClick={exportToCSV}
+                    title="Export CSV"
+                    className="p-3 text-neutral-400 hover:text-white hover:bg-white/10 rounded-xl transition-all hover:scale-105 active:scale-95"
+                >
+                    <LucideIcons.FileSpreadsheet size={20} />
+                </button>
+                <button
+                    onClick={exportToJSON}
+                    title="Export JSON"
+                    className="p-3 text-neutral-400 hover:text-white hover:bg-white/10 rounded-xl transition-all hover:scale-105 active:scale-95"
+                >
+                    <LucideIcons.FileJson size={20} />
+                </button>
+                <button
+                    onClick={exportToXLSX}
+                    title="Export Excel"
+                    className="p-3 text-neutral-400 hover:text-white hover:bg-white/10 rounded-xl transition-all hover:scale-105 active:scale-95"
+                >
+                    <LucideIcons.Sheet size={20} />
+                </button>
+
+                <div className="w-px h-8 bg-white/10 mx-2"></div>
+
+                <button
+                    onClick={shareToWhatsapp}
+                    title="Share List"
+                    className="p-3 text-green-500 hover:text-green-400 hover:bg-green-500/10 rounded-xl transition-all hover:scale-105 active:scale-95"
+                >
+                    <LucideIcons.Share2 size={20} />
+                </button>
+            </div>
         </div>
 
         {/* Add/Edit Item Modal */}
