@@ -21,6 +21,9 @@ import {
 import { getNow } from '@/app/utils/date';
 import * as LucideIcons from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { Header } from '@/app/components/ui/Header';
+import { PageTransition } from '@/app/components/ui/PageTransition';
+import { motion } from 'framer-motion';
 
 function getFaviconUrl(url: string) {
   try {
@@ -172,11 +175,51 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
     document.body.removeChild(link);
   };
 
-  const exportToJSON = () => {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(items, null, 2));
+  const exportToJSON = async () => {
+      if (!list) return;
+
+      const blobToBase64 = (blob: Blob): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      };
+
+      let thumbnailBase64 = null;
+      if (list.thumbnailBlob) {
+          thumbnailBase64 = await blobToBase64(list.thumbnailBlob);
+      }
+
+      // Export categories used by items
+      const usedCategoryIds = new Set(items.map(i => i.categoryId));
+      const exportCategories = categories.filter(c => usedCategoryIds.has(c.id));
+
+      const exportData = {
+          version: 1,
+          type: 'wishlist-export',
+          list: {
+              title: list.title,
+              description: list.description,
+              color: list.color,
+              iconName: list.iconName,
+              thumbnailBase64: thumbnailBase64,
+              createdAt: list.createdAt
+          },
+          items: items.map(i => ({
+              title: i.title,
+              url: i.url,
+              categoryId: i.categoryId,
+              createdAt: i.createdAt
+          })),
+          categories: exportCategories
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
       const downloadAnchorNode = document.createElement('a');
       downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", `${list?.title}_wishlist.json`);
+      downloadAnchorNode.setAttribute("download", `${list.title}_wishlist.json`);
       document.body.appendChild(downloadAnchorNode);
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
@@ -213,6 +256,65 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
     });
   };
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImportClick = () => {
+      fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+          const text = await file.text();
+          const json = JSON.parse(text);
+
+          let importedItems: WishlistItem[] = [];
+
+          if (Array.isArray(json)) {
+              importedItems = json;
+          } else if (json.items && Array.isArray(json.items)) {
+              importedItems = json.items;
+          } else {
+               alert('Invalid format: Could not find items in JSON.');
+               return;
+          }
+
+          let addedCount = 0;
+          for (const item of importedItems) {
+              if (!item.title) continue;
+
+              // Check if item ID already exists in current list
+              const exists = items.some(existing => existing.id === item.id);
+              if (exists) continue;
+
+              const newItem: WishlistItem = {
+                  ...item,
+                  id: item.id || crypto.randomUUID(), // Use existing ID or generate new
+                  listId: id, // Force current list ID
+                  createdAt: item.createdAt || getNow(),
+              };
+
+              await saveItem(newItem);
+              addedCount++;
+          }
+
+          if (addedCount > 0) {
+              await loadData();
+              alert(`Successfully imported ${addedCount} new items.`);
+          } else {
+              alert('No new items found to import.');
+          }
+
+      } catch (error) {
+          console.error('Import error:', error);
+          alert('Failed to import file. Please check if it is a valid JSON.');
+      } finally {
+          if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+  };
+
 
   if (!list) return null;
 
@@ -220,18 +322,16 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
   const Icon = !isEmoji ? LucideIcons[list.iconName as keyof typeof LucideIcons] : LucideIcons.Gift;
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white p-6 md:p-8">
-      <div className="max-w-5xl mx-auto">
-        <button onClick={() => router.push('/wishlist')} className="flex items-center text-neutral-400 hover:text-white mb-6 transition-colors">
-          <LucideIcons.ArrowLeft size={20} className="mr-2" />
-          Back to Lists
-        </button>
+    <div className="min-h-screen bg-neutral-950 text-white">
+      <Header title={list.title} backUrl="/wishlist" />
 
-        {/* Header */}
-        <div className="relative rounded-3xl overflow-hidden mb-8 bg-neutral-900 border border-white/10">
+      <PageTransition className="px-6 md:px-8 pb-6 md:pb-8 pt-32 max-w-5xl mx-auto">
+
+        {/* List Details Header */}
+        <div className="relative rounded-3xl overflow-hidden mb-8 bg-neutral-900 border border-white/5">
            <div className={`absolute inset-0 opacity-20 ${list.color}`}></div>
-           <div className="relative z-10 p-8 flex flex-col md:flex-row items-start md:items-center gap-6">
-              <div className="w-24 h-24 rounded-2xl bg-black/30 backdrop-blur-md flex items-center justify-center border border-white/10 overflow-hidden">
+           <div className="relative z-10 p-8 flex flex-row items-center gap-6">
+              <div className="w-24 h-24 rounded-2xl bg-black/30 backdrop-blur-md flex-shrink-0 flex items-center justify-center border border-white/10 overflow-hidden">
                  {list.thumbnailBlob ? (
                     <Image src={URL.createObjectURL(list.thumbnailBlob)} alt={list.title} width={96} height={96} className="object-cover w-full h-full" />
                  ) : (
@@ -274,82 +374,127 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
                     <p>No items yet. Add something you desire!</p>
                 </div>
             ) : (
-                items.map(item => {
+                items.map((item, index) => {
                     const category = categories.find(c => c.id === item.categoryId);
                     // @ts-expect-error - Dynamic Icon
                     const CatIcon = category ? (LucideIcons[category.iconName] || LucideIcons.Tag) : LucideIcons.Tag;
 
                     return (
-                        <GlassCard key={item.id} className="flex items-center gap-4 group">
-                             {/* Store/Favicon Icon */}
-                             <div className="w-12 h-12 rounded-xl bg-white/5 flex-shrink-0 flex items-center justify-center overflow-hidden border border-white/5">
-                                 {item.url ? (
-                                    <img src={getFaviconUrl(item.url) || ''} alt="icon" className="w-8 h-8 object-contain opacity-80" onError={(e) => (e.currentTarget.src = '')} />
-                                 ) : (
-                                    <LucideIcons.Package size={20} className="text-neutral-500" />
-                                 )}
-                             </div>
-
-                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-semibold text-lg truncate text-white/90">
-                                        {item.url ? (
-                                            <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:underline decoration-white/30">
-                                                {item.title}
-                                            </a>
-                                        ) : (
-                                            item.title
-                                        )}
-                                    </h3>
-                                    {item.url && <LucideIcons.ExternalLink size={12} className="text-neutral-500" />}
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    {category && (
-                                        <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-white/5 text-neutral-300 border border-white/5`}>
-                                            <CatIcon size={12} className={category.color.replace('bg-', 'text-')} />
-                                            {category.name}
-                                        </div>
+                        <motion.div
+                           key={item.id}
+                           initial={{ opacity: 0, y: 10 }}
+                           animate={{ opacity: 1, y: 0 }}
+                           transition={{ delay: index * 0.03 }}
+                        >
+                            <GlassCard className="flex items-center gap-4 group hover:bg-white/5 transition-colors">
+                                {/* Store/Favicon Icon */}
+                                <div className="w-12 h-12 rounded-xl bg-white/5 flex-shrink-0 flex items-center justify-center overflow-hidden border border-white/5">
+                                    {item.url ? (
+                                        <img src={getFaviconUrl(item.url) || ''} alt="icon" className="w-8 h-8 object-contain opacity-80" onError={(e) => (e.currentTarget.src = '')} />
+                                    ) : (
+                                        <LucideIcons.Package size={20} className="text-neutral-500" />
                                     )}
-                                    <span className="text-xs text-neutral-500">Added {formatDate(item.createdAt)}</span>
                                 </div>
-                             </div>
 
-                             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                    onClick={() => handleEditItem(item)}
-                                    className="p-2 text-neutral-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
-                                    title="Edit"
-                                >
-                                    <LucideIcons.Edit2 size={18} />
-                                </button>
-                                <button
-                                    onClick={() => handleDeleteItem(item.id)}
-                                    className="p-2 text-neutral-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                    title="Delete"
-                                >
-                                    <LucideIcons.Trash2 size={18} />
-                                </button>
-                             </div>
-                        </GlassCard>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <h3 className="font-semibold text-lg truncate text-white/90">
+                                            {item.url ? (
+                                                <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:underline decoration-white/30">
+                                                    {item.title}
+                                                </a>
+                                            ) : (
+                                                item.title
+                                            )}
+                                        </h3>
+                                        {item.url && <LucideIcons.ExternalLink size={12} className="text-neutral-500" />}
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        {category && (
+                                            <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-white/5 text-neutral-300 border border-white/5`}>
+                                                <CatIcon size={12} className={category.color.replace('bg-', 'text-')} />
+                                                {category.name}
+                                            </div>
+                                        )}
+                                        <span className="text-xs text-neutral-500">Added {formatDate(item.createdAt)}</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={() => handleEditItem(item)}
+                                        className="p-2 text-neutral-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
+                                        title="Edit"
+                                    >
+                                        <LucideIcons.Edit2 size={18} />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteItem(item.id)}
+                                        className="p-2 text-neutral-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                        title="Delete"
+                                    >
+                                        <LucideIcons.Trash2 size={18} />
+                                    </button>
+                                </div>
+                            </GlassCard>
+                        </motion.div>
                     );
                 })
             )}
         </div>
 
         {/* Export & Share Actions (Bottom) */}
-        <div className="mt-12 pt-8 border-t border-white/10 flex flex-wrap justify-center gap-3">
-            <button onClick={exportToCSV} className="px-5 py-3 bg-white/5 hover:bg-white/10 rounded-xl font-medium border border-white/10 flex items-center gap-2">
-                <LucideIcons.FileSpreadsheet size={16} /> Export CSV
-            </button>
-            <button onClick={exportToJSON} className="px-5 py-3 bg-white/5 hover:bg-white/10 rounded-xl font-medium border border-white/10 flex items-center gap-2">
-                <LucideIcons.FileJson size={16} /> Export JSON
-            </button>
-            <button onClick={exportToXLSX} className="px-5 py-3 bg-white/5 hover:bg-white/10 rounded-xl font-medium border border-white/10 flex items-center gap-2">
-                <LucideIcons.Sheet size={16} /> Export Excel
-            </button>
-            <button onClick={shareToWhatsapp} className="px-5 py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-medium flex items-center gap-2 shadow-lg shadow-green-900/20">
-                <LucideIcons.Share2 size={16} /> Share List
-            </button>
+        <div className="mt-12 pt-8 flex justify-center">
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept=".json"
+                className="hidden"
+            />
+            <div className="flex items-center bg-neutral-900/80 backdrop-blur-xl border border-white/10 rounded-2xl p-2 gap-1 shadow-2xl">
+                <button
+                    onClick={handleImportClick}
+                    title="Import JSON"
+                    className="p-3 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-xl transition-all hover:scale-105 active:scale-95"
+                >
+                    <LucideIcons.Upload size={20} />
+                </button>
+
+                <div className="w-px h-8 bg-white/10 mx-2"></div>
+
+                <button
+                    onClick={exportToCSV}
+                    title="Export CSV"
+                    className="p-3 text-neutral-400 hover:text-white hover:bg-white/10 rounded-xl transition-all hover:scale-105 active:scale-95"
+                >
+                    <LucideIcons.FileSpreadsheet size={20} />
+                </button>
+                <button
+                    onClick={exportToJSON}
+                    title="Export JSON"
+                    className="p-3 text-neutral-400 hover:text-white hover:bg-white/10 rounded-xl transition-all hover:scale-105 active:scale-95"
+                >
+                    <LucideIcons.FileJson size={20} />
+                </button>
+                <button
+                    onClick={exportToXLSX}
+                    title="Export Excel"
+                    className="p-3 text-neutral-400 hover:text-white hover:bg-white/10 rounded-xl transition-all hover:scale-105 active:scale-95"
+                >
+                    <LucideIcons.Sheet size={20} />
+                </button>
+
+                <div className="w-px h-8 bg-white/10 mx-2"></div>
+
+                <button
+                    onClick={shareToWhatsapp}
+                    title="Share List"
+                    className="p-3 text-green-500 hover:text-green-400 hover:bg-green-500/10 rounded-xl transition-all hover:scale-105 active:scale-95"
+                >
+                    <LucideIcons.Share2 size={20} />
+                </button>
+            </div>
         </div>
 
         {/* Add/Edit Item Modal */}
@@ -471,7 +616,7 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
             </form>
         </Modal>
 
-      </div>
+      </PageTransition>
     </div>
   );
 }
