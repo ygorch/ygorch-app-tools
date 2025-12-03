@@ -231,8 +231,8 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
         {/* List Details Header */}
         <div className="relative rounded-3xl overflow-hidden mb-8 bg-neutral-900 border border-white/5">
            <div className={`absolute inset-0 opacity-20 ${list.color}`}></div>
-           <div className="relative z-10 p-8 flex flex-col md:flex-row items-start md:items-center gap-6">
-              <div className="w-24 h-24 rounded-2xl bg-black/30 backdrop-blur-md flex items-center justify-center border border-white/10 overflow-hidden">
+           <div className="relative z-10 p-8 flex flex-row items-center gap-6">
+              <div className="w-24 h-24 rounded-2xl bg-black/30 backdrop-blur-md flex-shrink-0 flex items-center justify-center border border-white/10 overflow-hidden">
                  {list.thumbnailBlob ? (
                     <Image src={URL.createObjectURL(list.thumbnailBlob)} alt={list.title} width={96} height={96} className="object-cover w-full h-full" />
                  ) : (
