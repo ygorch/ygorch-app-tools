@@ -7,7 +7,17 @@ import { GlassCard } from '@/app/components/ui/GlassCard';
 import { Modal } from '@/app/components/ui/Modal';
 import { IconPicker } from '@/app/components/ui/IconPicker';
 import { ColorPicker } from '@/app/components/ui/ColorPicker';
-import { getAllLists, saveList, deleteList, WishlistList } from '@/app/utils/db';
+import {
+  getAllLists,
+  saveList,
+  deleteList,
+  WishlistList,
+  saveItem,
+  saveCategory,
+  getAllCategories,
+  WishlistCategory,
+  WishlistItem
+} from '@/app/utils/db';
 import { Header } from '@/app/components/ui/Header';
 import { PageTransition } from '@/app/components/ui/PageTransition';
 import * as LucideIcons from 'lucide-react';
@@ -135,6 +145,113 @@ export default function WishlistHome() {
     await loadLists();
   };
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+          const text = await file.text();
+          const json = JSON.parse(text);
+
+          // Support new format with list metadata
+          if (!json.list || !json.items) {
+             alert('Invalid file format. This importer expects a full list export (JSON with list metadata).');
+             return;
+          }
+
+          setIsLoading(true);
+
+          const listData = json.list;
+          const itemsData = json.items;
+          const catsData: WishlistCategory[] = json.categories || [];
+
+          // 1. Process Thumbnail
+          let thumbnailBlob: Blob | undefined = undefined;
+          if (listData.thumbnailBase64) {
+              try {
+                  const res = await fetch(listData.thumbnailBase64);
+                  thumbnailBlob = await res.blob();
+              } catch (err) {
+                  console.error("Failed to process thumbnail", err);
+              }
+          }
+
+          // 2. Create List
+          const newListId = crypto.randomUUID();
+          const newList: WishlistList = {
+              id: newListId,
+              title: listData.title,
+              description: listData.description,
+              color: listData.color,
+              iconName: listData.iconName,
+              thumbnailBlob: thumbnailBlob,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+          };
+          await saveList(newList);
+
+          // 3. Process Categories
+          const existingCats = await getAllCategories();
+          const catIdMap = new Map<string, string>(); // Old ID -> New ID
+
+          for (const cat of catsData) {
+              // Check if category with same name exists
+              const existing = existingCats.find(c => c.name.toLowerCase() === cat.name.toLowerCase());
+              if (existing) {
+                  catIdMap.set(cat.id, existing.id);
+              } else {
+                  // Create new category
+                  const newCatId = crypto.randomUUID();
+                  const newCat: WishlistCategory = {
+                      id: newCatId,
+                      name: cat.name,
+                      color: cat.color,
+                      iconName: cat.iconName,
+                      createdAt: Date.now()
+                  };
+                  await saveCategory(newCat);
+                  catIdMap.set(cat.id, newCatId);
+                  existingCats.push(newCat); // Update local list
+              }
+          }
+
+          // 4. Process Items
+          // @ts-expect-error - implicit any
+          for (const item of itemsData) {
+              let catId = item.categoryId;
+              if (catId && catIdMap.has(catId)) {
+                  catId = catIdMap.get(catId)!;
+              }
+
+              const newItem: WishlistItem = {
+                  id: crypto.randomUUID(),
+                  listId: newListId,
+                  title: item.title,
+                  url: item.url,
+                  categoryId: catId || '',
+                  createdAt: item.createdAt || Date.now()
+              };
+              await saveItem(newItem);
+          }
+
+          await loadLists();
+          alert('List imported successfully!');
+
+      } catch (error) {
+          console.error("Import failed", error);
+          alert("Failed to import list.");
+      } finally {
+          setIsLoading(false);
+          if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+  };
+
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
       <Header title="My Wishlists" />
@@ -147,13 +264,29 @@ export default function WishlistHome() {
              </h1>
              <p className="text-neutral-400 text-sm mt-1">Manage your organized lists</p>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="px-6 py-2.5 bg-white text-black font-semibold rounded-full hover:bg-neutral-200 transition-colors flex items-center gap-2 shadow-lg hover:scale-105 transform duration-200"
-          >
-            <LucideIcons.Plus size={18} />
-            New List
-          </button>
+          <div className="flex gap-3">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImportFile}
+                accept=".json"
+                className="hidden"
+              />
+              <button
+                onClick={handleImportClick}
+                className="px-5 py-2.5 bg-neutral-800 text-neutral-300 font-semibold rounded-full hover:bg-neutral-700 hover:text-white transition-colors flex items-center gap-2"
+              >
+                <LucideIcons.Upload size={18} />
+                Import
+              </button>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="px-6 py-2.5 bg-white text-black font-semibold rounded-full hover:bg-neutral-200 transition-colors flex items-center gap-2 shadow-lg hover:scale-105 transform duration-200"
+              >
+                <LucideIcons.Plus size={18} />
+                New List
+              </button>
+          </div>
         </div>
 
         {isLoading ? (

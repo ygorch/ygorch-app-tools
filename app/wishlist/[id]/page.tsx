@@ -175,11 +175,51 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
     document.body.removeChild(link);
   };
 
-  const exportToJSON = () => {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(items, null, 2));
+  const exportToJSON = async () => {
+      if (!list) return;
+
+      const blobToBase64 = (blob: Blob): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      };
+
+      let thumbnailBase64 = null;
+      if (list.thumbnailBlob) {
+          thumbnailBase64 = await blobToBase64(list.thumbnailBlob);
+      }
+
+      // Export categories used by items
+      const usedCategoryIds = new Set(items.map(i => i.categoryId));
+      const exportCategories = categories.filter(c => usedCategoryIds.has(c.id));
+
+      const exportData = {
+          version: 1,
+          type: 'wishlist-export',
+          list: {
+              title: list.title,
+              description: list.description,
+              color: list.color,
+              iconName: list.iconName,
+              thumbnailBase64: thumbnailBase64,
+              createdAt: list.createdAt
+          },
+          items: items.map(i => ({
+              title: i.title,
+              url: i.url,
+              categoryId: i.categoryId,
+              createdAt: i.createdAt
+          })),
+          categories: exportCategories
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
       const downloadAnchorNode = document.createElement('a');
       downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", `${list?.title}_wishlist.json`);
+      downloadAnchorNode.setAttribute("download", `${list.title}_wishlist.json`);
       document.body.appendChild(downloadAnchorNode);
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
@@ -228,11 +268,17 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
 
       try {
           const text = await file.text();
-          const importedItems = JSON.parse(text);
+          const json = JSON.parse(text);
 
-          if (!Array.isArray(importedItems)) {
-              alert('Invalid format: JSON must be an array of items.');
-              return;
+          let importedItems: WishlistItem[] = [];
+
+          if (Array.isArray(json)) {
+              importedItems = json;
+          } else if (json.items && Array.isArray(json.items)) {
+              importedItems = json.items;
+          } else {
+               alert('Invalid format: Could not find items in JSON.');
+               return;
           }
 
           let addedCount = 0;
