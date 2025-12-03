@@ -222,7 +222,6 @@ export default function WishlistHome() {
           }
 
           // 4. Process Items
-          // @ts-expect-error - implicit any
           for (const item of itemsData) {
               let catId = item.categoryId;
               if (catId && catIdMap.has(catId)) {
