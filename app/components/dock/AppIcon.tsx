@@ -4,6 +4,8 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { AppDefinition } from "@/app/utils/apps";
+import { usePreferences } from "@/app/hooks/usePreferences";
+import { getTextColor } from "@/app/utils/styles";
 
 interface AppIconProps {
   app: AppDefinition;
@@ -14,6 +16,8 @@ interface AppIconProps {
 
 export function AppIcon({ app, name, isActive, onClick }: AppIconProps) {
   const Icon = app.icon;
+  const { preferences } = usePreferences();
+  const textColor = preferences ? getTextColor(preferences.backgroundColor) : 'text-gray-300';
 
   return (
     <Link
@@ -55,7 +59,7 @@ export function AppIcon({ app, name, isActive, onClick }: AppIconProps) {
       {/* Label */}
       <motion.div
         animate={{ opacity: isActive ? 0 : 1 }}
-        className="text-sm text-center font-medium text-gray-300 tracking-wide group-hover:text-white transition-colors duration-300"
+        className={`text-sm text-center font-medium tracking-wide transition-colors duration-300 ${textColor} group-hover:opacity-80`}
       >
         {name}
       </motion.div>

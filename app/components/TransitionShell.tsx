@@ -6,11 +6,14 @@ import { HomeScreen } from "./dock/HomeScreen";
 import { AnimatePresence, motion } from "framer-motion";
 import { getApps } from "@/app/utils/apps";
 import { useLanguage } from "@/app/hooks/useLanguage";
+import { usePreferences } from "@/app/hooks/usePreferences";
+import { PATTERNS } from "@/app/utils/styles";
 import { useEffect, useState } from "react";
 
 export function TransitionShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { t } = useLanguage();
+  const { preferences } = usePreferences();
   const apps = getApps(t);
 
   // Identify active app
@@ -19,16 +22,50 @@ export function TransitionShell({ children }: { children: React.ReactNode }) {
 
   // Prevent hydration mismatch by ensuring we only animate after mount
   const [mounted, setMounted] = useState(false);
+  const [bgImage, setBgImage] = useState<string | null>(null);
+
   useEffect(() => {
     // Defer the setMounted to avoid synchronous setState warning and ensure we are client-side
     const timer = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(timer);
   }, []);
 
-  if (!mounted) return <div className="bg-neutral-950 min-h-screen">{children}</div>;
+  useEffect(() => {
+    if (preferences?.backgroundType === 'image' && preferences.backgroundImage) {
+        const url = URL.createObjectURL(preferences.backgroundImage);
+        setBgImage(url);
+        return () => URL.revokeObjectURL(url);
+    } else {
+        setBgImage(null);
+    }
+  }, [preferences?.backgroundType, preferences?.backgroundImage]);
+
+  if (!mounted || !preferences) return <div className="bg-neutral-950 min-h-screen">{children}</div>;
+
+  // Calculate dynamic background style
+  const containerStyle: React.CSSProperties = {
+      backgroundColor: preferences.backgroundColor || '#0a0a0a',
+  };
+
+  if (preferences.backgroundType === 'doodle' && preferences.backgroundPattern) {
+      const pattern = PATTERNS.find(p => p.name === preferences.backgroundPattern);
+      if (pattern) {
+          containerStyle.backgroundImage = pattern.css;
+          containerStyle.backgroundSize = pattern.size;
+          // @ts-expect-error - Custom property
+          containerStyle['--pattern-color'] = preferences.theme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+      }
+  } else if (preferences.backgroundType === 'image' && bgImage) {
+      containerStyle.backgroundImage = `url(${bgImage})`;
+      containerStyle.backgroundSize = 'cover';
+      containerStyle.backgroundPosition = 'center';
+  }
 
   return (
-    <div className="relative min-h-screen bg-neutral-950 overflow-hidden">
+    <div
+        className="relative min-h-screen overflow-hidden transition-colors duration-500 ease-in-out"
+        style={containerStyle}
+    >
       {/*
          1. The Home Screen is ALWAYS rendered in the background.
          It manages its own state of "fading out" icons via the prop passed down.
@@ -42,7 +79,7 @@ export function TransitionShell({ children }: { children: React.ReactNode }) {
         {!isHome && activeApp && (
           <motion.div
             layoutId={`app-icon-bg-${activeApp.id}`}
-            className="absolute inset-0 z-50 bg-neutral-950 overflow-y-auto"
+            className="absolute inset-0 z-50 overflow-y-auto"
             initial={{ borderRadius: 24 }}
             animate={{ borderRadius: 0 }}
             exit={{ borderRadius: 24, transition: { duration: 0.2 } }}
@@ -51,7 +88,7 @@ export function TransitionShell({ children }: { children: React.ReactNode }) {
                 stiffness: 300,
                 damping: 30
             }}
-            style={{ borderRadius: 24 }} // Force initial border radius to ensure correct transformation
+            style={{ borderRadius: 24, ...containerStyle }} // Force initial border radius and inherit background
           >
              {/* Optional: Add a Close button if the app doesn't have one,
                  though ideally the app has its own navigation.
