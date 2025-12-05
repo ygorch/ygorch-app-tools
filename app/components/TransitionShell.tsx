@@ -45,12 +45,13 @@ export function TransitionShell({ children }: { children: React.ReactNode }) {
             className="absolute inset-0 z-50 bg-neutral-950 overflow-y-auto"
             initial={{ borderRadius: 24 }}
             animate={{ borderRadius: 0 }}
-            exit={{ borderRadius: 24, opacity: 0, transition: { duration: 0.2 } }}
+            exit={{ borderRadius: 24, transition: { duration: 0.2 } }}
             transition={{
                 type: "spring",
                 stiffness: 300,
                 damping: 30
             }}
+            style={{ borderRadius: 24 }} // Force initial border radius to ensure correct transformation
           >
              {/* Optional: Add a Close button if the app doesn't have one,
                  though ideally the app has its own navigation.

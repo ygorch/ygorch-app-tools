@@ -42,7 +42,7 @@ export function AppIcon({ app, name, isActive, onClick }: AppIconProps) {
             </motion.div>
 
             {/* Notification Badge */}
-            {app.notification && app.notification > 0 && (
+            {app.notification !== undefined && app.notification > 0 && (
                 <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-neutral-900 shadow-md">
                 {app.notification}
                 </div>
