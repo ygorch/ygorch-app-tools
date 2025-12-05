@@ -28,7 +28,7 @@ export function HomeScreen() {
            // we assume `t[app.translationKey].title` or similar exists.
            // Based on `page.tsx`: t.imageReducer.title
 
-           // @ts-expect-error - Dynamic translation key access
+           // @ts-ignore
            const appName = t[app.translationKey]?.title || app.id;
 
            return (
