@@ -1,0 +1,31 @@
+
+import { Image, Gift } from "lucide-react";
+
+export interface AppDefinition {
+  id: string;
+  icon: React.ElementType; // Lucide icon component
+  href: string;
+  color: string;
+  translationKey: 'imageReducer' | 'wishlist'; // Key to look up in translations
+  notification?: number;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+export const getApps = (t: any): AppDefinition[] => [
+  {
+    id: "image-reducer",
+    translationKey: "imageReducer",
+    icon: Image,
+    color: "bg-white/5 backdrop-blur-xl border border-white/10 group-hover:bg-white/10 group-hover:border-white/20",
+    href: "/image-reducer",
+    notification: 0,
+  },
+  {
+    id: "wishlist",
+    translationKey: "wishlist",
+    icon: Gift,
+    color: "bg-white/5 backdrop-blur-xl border border-white/10 group-hover:bg-white/10 group-hover:border-white/20",
+    href: "/wishlist",
+    notification: 0,
+  },
+];

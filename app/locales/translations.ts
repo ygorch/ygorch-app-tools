@@ -2,6 +2,9 @@ export const en = {
   hub: {
     title: "Ygor's Tools",
   },
+  wishlist: {
+    title: "Wishlist",
+  },
   imageReducer: {
     title: "Image Reducer",
     uploadInstruction: "Upload an image (JPG, PNG)",
@@ -30,6 +33,9 @@ export const pt = {
   hub: {
     title: "Ygor's Tools",
   },
+  wishlist: {
+    title: "Lista de Desejos",
+  },
   imageReducer: {
     title: "Redutor de Imagem",
     uploadInstruction: "Carregue uma imagem (JPG, PNG)",
@@ -57,6 +63,9 @@ export const pt = {
 export const es = {
   hub: {
     title: "Ygor's Tools",
+  },
+  wishlist: {
+    title: "Lista de Deseos",
   },
   imageReducer: {
     title: "Reductor de Imagen",
