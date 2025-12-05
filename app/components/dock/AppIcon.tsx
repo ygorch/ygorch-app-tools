@@ -26,10 +26,12 @@ export function AppIcon({ app, name, isActive, onClick }: AppIconProps) {
         <motion.div
           layoutId={`app-icon-bg-${app.id}`}
           className={`absolute inset-0 rounded-3xl shadow-lg transition-colors duration-300 ${app.color} flex items-center justify-center`}
-          initial={false}
+          initial={{ borderRadius: 24 }}
+          style={{ borderRadius: 24 }}
           animate={{
              opacity: isActive ? 0 : 1,
-             scale: isActive ? 1.2 : 1
+             scale: isActive ? 1.2 : 1,
+             borderRadius: 24
           }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >

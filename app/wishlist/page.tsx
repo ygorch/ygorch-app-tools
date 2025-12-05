@@ -274,16 +274,16 @@ export default function WishlistHome() {
               <button
                 onClick={handleImportClick}
                 className="px-5 py-2.5 bg-neutral-800 text-neutral-300 font-semibold rounded-full hover:bg-neutral-700 hover:text-white transition-colors flex items-center gap-2"
+                title="Import"
               >
                 <LucideIcons.Upload size={18} />
-                Import
               </button>
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="px-6 py-2.5 bg-white text-black font-semibold rounded-full hover:bg-neutral-200 transition-colors flex items-center gap-2 shadow-lg hover:scale-105 transform duration-200"
+                title="Create New List"
               >
                 <LucideIcons.Plus size={18} />
-                New List
               </button>
           </div>
         </div>
