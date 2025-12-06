@@ -23,8 +23,12 @@ import { PageTransition } from '@/app/components/ui/PageTransition';
 import * as LucideIcons from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import { motion } from 'framer-motion';
+import { usePreferences } from '@/app/hooks/usePreferences';
+import { getTextColor } from '@/app/utils/styles';
 
 export default function WishlistHome() {
+  const { preferences } = usePreferences();
+  const textColor = preferences ? getTextColor(preferences.backgroundColor) : 'text-white';
   const [lists, setLists] = useState<WishlistList[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -252,16 +256,16 @@ export default function WishlistHome() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white">
+    <div className={`min-h-screen ${textColor}`}>
       <Header title="My Wishlists" />
 
       <PageTransition className="px-8 pb-8 pt-32 max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-10">
           <div>
-             <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
+             <h1 className={`text-3xl font-bold ${textColor}`}>
                Collections
              </h1>
-             <p className="text-neutral-400 text-sm mt-1">Manage your organized lists</p>
+             <p className={`text-sm mt-1 ${textColor} opacity-70`}>Manage your organized lists</p>
           </div>
           <div className="flex gap-3">
               <input
@@ -274,16 +278,16 @@ export default function WishlistHome() {
               <button
                 onClick={handleImportClick}
                 className="px-5 py-2.5 bg-neutral-800 text-neutral-300 font-semibold rounded-full hover:bg-neutral-700 hover:text-white transition-colors flex items-center gap-2"
+                title="Import"
               >
                 <LucideIcons.Upload size={18} />
-                Import
               </button>
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="px-6 py-2.5 bg-white text-black font-semibold rounded-full hover:bg-neutral-200 transition-colors flex items-center gap-2 shadow-lg hover:scale-105 transform duration-200"
+                title="Create New List"
               >
                 <LucideIcons.Plus size={18} />
-                New List
               </button>
           </div>
         </div>
