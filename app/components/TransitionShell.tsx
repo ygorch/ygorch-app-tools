@@ -53,7 +53,7 @@ export function TransitionShell({ children }: { children: React.ReactNode }) {
           containerStyle.backgroundImage = pattern.css;
           containerStyle.backgroundSize = pattern.size;
           // @ts-expect-error - Custom property
-          containerStyle['--pattern-color'] = preferences.theme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+          containerStyle['--pattern-color'] = preferences.theme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
       }
   } else if (preferences.backgroundType === 'image' && bgImage) {
       containerStyle.backgroundImage = `url(${bgImage})`;
