@@ -29,9 +29,18 @@ import { getTextColor } from '@/app/utils/styles';
 export default function WishlistHome() {
   const { preferences } = usePreferences();
   const textColor = preferences ? getTextColor(preferences.backgroundColor) : 'text-white';
+  const isDark = textColor === 'text-white';
+
   const [lists, setLists] = useState<WishlistList[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Theme styles for form inputs
+  const inputStyles = isDark
+    ? "bg-neutral-800 border-neutral-700 text-white placeholder-neutral-400 focus:ring-blue-500"
+    : "bg-neutral-100 border-neutral-200 text-neutral-900 placeholder-neutral-500 focus:ring-blue-500";
+
+  const labelStyles = isDark ? "text-neutral-400" : "text-neutral-600";
 
   // Form State
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -393,7 +402,7 @@ export default function WishlistHome() {
 
             {/* Thumbnail Upload */}
             <div className="flex flex-col items-center gap-4">
-               <div className={`w-32 h-32 rounded-2xl border-2 border-dashed border-neutral-600 flex items-center justify-center overflow-hidden relative ${color} bg-opacity-10`}>
+               <div className={`w-32 h-32 rounded-2xl border-2 border-dashed ${isDark ? 'border-neutral-600' : 'border-neutral-300'} flex items-center justify-center overflow-hidden relative ${color} bg-opacity-10`}>
                   {thumbnailPreview ? (
                     <Image src={thumbnailPreview} alt="Preview" fill className="object-cover" />
                   ) : (
@@ -407,11 +416,11 @@ export default function WishlistHome() {
                                return <span className="text-4xl mb-2">{iconName}</span>;
                            }
                        })()}
-                       <span className="text-xs text-neutral-400">Preview</span>
+                       <span className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Preview</span>
                     </div>
                   )}
                </div>
-               <label className="cursor-pointer px-4 py-2 bg-neutral-800 rounded-lg text-sm hover:bg-neutral-700 transition-colors">
+               <label className={`cursor-pointer px-4 py-2 rounded-lg text-sm transition-colors ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-white' : 'bg-neutral-200 hover:bg-neutral-300 text-neutral-900'}`}>
                   {thumbnail ? "Change Cover Image" : "Upload Cover Image"}
                   <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                </label>
@@ -423,40 +432,40 @@ export default function WishlistHome() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-neutral-400">List Title</label>
+              <label className={`text-sm ${labelStyles}`}>List Title</label>
               <input
                 type="text"
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full rounded-lg p-3 border focus:outline-none focus:ring-2 ${inputStyles}`}
                 placeholder="e.g., Tech Upgrade 2024"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-neutral-400">Description</label>
+              <label className={`text-sm ${labelStyles}`}>Description</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 h-24 resize-none"
+                className={`w-full rounded-lg p-3 border focus:outline-none focus:ring-2 h-24 resize-none ${inputStyles}`}
                 placeholder="What's this list for?"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-neutral-400">Theme Color</label>
+              <label className={`text-sm ${labelStyles}`}>Theme Color</label>
               <ColorPicker selectedColor={color} onSelect={setColor} />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-neutral-400">Icon / Emoji</label>
+              <label className={`text-sm ${labelStyles}`}>Icon / Emoji</label>
               <IconPicker selectedIcon={iconName} onSelect={setIconName} />
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-neutral-200 transition-colors"
+              className={`w-full py-3 font-bold rounded-xl transition-colors ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-neutral-900 text-white hover:bg-neutral-700'}`}
             >
               {editingId ? "Save Changes" : "Create List"}
             </button>
