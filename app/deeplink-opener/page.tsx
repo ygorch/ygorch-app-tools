@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useLanguage } from "../hooks/useLanguage";
 import { usePreferences } from "../hooks/usePreferences";
 import { getTextColor } from "../utils/styles";
@@ -11,10 +11,12 @@ import { ExternalLink, QrCode, Trash2, Smartphone, Download, Share2, X, Camera }
 import QRCode from "react-qr-code";
 import { Html5Qrcode } from "html5-qrcode";
 import { Toast, ToastType } from "../components/ui/Toast";
+import { useSearchParams } from "next/navigation";
 
-export default function DeeplinkOpener() {
+function DeeplinkContent() {
   const { t } = useLanguage();
   const { preferences } = usePreferences();
+  const searchParams = useSearchParams();
 
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<DeeplinkHistoryItem[]>([]);
@@ -28,6 +30,18 @@ export default function DeeplinkOpener() {
 
   // Theme Helpers
   const isDark = preferences ? getTextColor(preferences.backgroundColor) === 'text-white' : true;
+
+  useEffect(() => {
+    const linkParam = searchParams.get("link");
+    if (linkParam) {
+      // Basic sanitization: allow only typical custom scheme or http characters
+      // Removing potential script tags or javascript: prefixes logic
+      const sanitized = linkParam.trim();
+      if (!sanitized.toLowerCase().startsWith("javascript:")) {
+          setInput(sanitized);
+      }
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     let html5QrCode: Html5Qrcode | null = null;
@@ -85,7 +99,10 @@ export default function DeeplinkOpener() {
       if (!ctx) return;
       ctx.fillStyle = "white";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      // Add margin
+      const margin = 50;
+      ctx.drawImage(img, margin, margin, canvas.width - (margin * 2), canvas.height - (margin * 2));
 
       const pngFile = canvas.toDataURL("image/png");
       const downloadLink = document.createElement("a");
@@ -118,7 +135,10 @@ export default function DeeplinkOpener() {
        if (!ctx) return;
        ctx.fillStyle = "white";
        ctx.fillRect(0, 0, canvas.width, canvas.height);
-       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+       // Add margin
+       const margin = 50;
+       ctx.drawImage(img, margin, margin, canvas.width - (margin * 2), canvas.height - (margin * 2));
 
        canvas.toBlob(async (blob) => {
          if (!blob) return;
@@ -126,10 +146,15 @@ export default function DeeplinkOpener() {
 
          if (navigator.share) {
            try {
+             const shareUrl = typeof window !== 'undefined'
+                ? `${window.location.origin}${window.location.pathname}?link=${encodeURIComponent(input)}`
+                : input;
+
              await navigator.share({
                files: [file],
                title: 'QR Code',
-               text: qrCodeValue || '',
+               text: `Open this deeplink: ${shareUrl}`,
+               url: shareUrl,
              });
            } catch (error) {
              console.error("Error sharing:", error);
@@ -377,5 +402,13 @@ export default function DeeplinkOpener() {
         onClose={hideToast}
       />
     </div>
+  );
+}
+
+export default function DeeplinkOpener() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <DeeplinkContent />
+    </Suspense>
   );
 }
