@@ -24,6 +24,8 @@ import * as XLSX from 'xlsx';
 import { Header } from '@/app/components/ui/Header';
 import { PageTransition } from '@/app/components/ui/PageTransition';
 import { motion } from 'framer-motion';
+import { usePreferences } from '@/app/hooks/usePreferences';
+import { getTextColor } from '@/app/utils/styles';
 
 function getFaviconUrl(url: string) {
   try {
@@ -41,6 +43,16 @@ function formatDate(timestamp: number) {
 export default function WishlistDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { preferences } = usePreferences();
+  const isDark = preferences ? getTextColor(preferences.backgroundColor) === 'text-white' : true;
+
+  // Theme styles for form inputs
+  const inputStyles = isDark
+    ? "bg-neutral-800 border-neutral-700 text-white placeholder-neutral-400 focus:ring-blue-500"
+    : "bg-neutral-100 border-neutral-200 text-neutral-900 placeholder-neutral-500 focus:ring-blue-500";
+
+  const labelStyles = isDark ? "text-neutral-400" : "text-neutral-600";
+  const btnStyles = isDark ? "bg-white text-black hover:bg-neutral-200" : "bg-neutral-900 text-white hover:bg-neutral-700";
 
   const [list, setList] = useState<WishlistList | null>(null);
   const [items, setItems] = useState<WishlistItem[]>([]);
@@ -505,34 +517,34 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
         >
             <form onSubmit={handleSubmitItem} className="space-y-4">
                 <div>
-                    <label className="block text-sm text-neutral-400 mb-1">Product URL (Optional)</label>
-                    <div className="flex items-center gap-2 bg-neutral-800 rounded-lg border border-neutral-700 focus-within:ring-2 focus-within:ring-blue-500 px-3">
+                    <label className={`block text-sm mb-1 ${labelStyles}`}>Product URL (Optional)</label>
+                    <div className={`flex items-center gap-2 rounded-lg border focus-within:ring-2 focus-within:ring-blue-500 px-3 ${inputStyles.replace('focus:ring-blue-500', '')}`}>
                         <LucideIcons.Link size={16} className="text-neutral-500" />
                         <input
                            type="url"
                            value={itemUrl}
                            onChange={(e) => setItemUrl(e.target.value)}
-                           className="w-full bg-transparent py-3 text-white focus:outline-none"
+                           className={`w-full bg-transparent py-3 focus:outline-none ${isDark ? 'text-white' : 'text-neutral-900'}`}
                            placeholder="https://store.com/product..."
                         />
                     </div>
                 </div>
 
                 <div>
-                    <label className="block text-sm text-neutral-400 mb-1">Product Title</label>
+                    <label className={`block text-sm mb-1 ${labelStyles}`}>Product Title</label>
                     <input
                        type="text"
                        required
                        value={itemTitle}
                        onChange={(e) => setItemTitle(e.target.value)}
-                       className="w-full bg-neutral-800 rounded-lg border border-neutral-700 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       className={`w-full rounded-lg border p-3 focus:outline-none focus:ring-2 ${inputStyles}`}
                        placeholder="e.g., Wireless Headphones"
                     />
                 </div>
 
                 <div>
                     <div className="flex justify-between items-center mb-1">
-                        <label className="text-sm text-neutral-400">Category</label>
+                        <label className={`text-sm ${labelStyles}`}>Category</label>
                         <button
                            type="button"
                            onClick={() => { setIsItemModalOpen(false); setIsCategoryModalOpen(true); }}
@@ -553,8 +565,10 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
                                     onClick={() => setSelectedCategoryId(cat.id)}
                                     className={`p-3 rounded-lg border flex items-center gap-2 transition-all ${
                                         selectedCategoryId === cat.id
-                                        ? `border-blue-500 bg-blue-500/10 text-white`
-                                        : 'border-neutral-700 bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                                        ? `border-blue-500 bg-blue-500/10 ${isDark ? 'text-white' : 'text-black'}`
+                                        : isDark
+                                            ? 'border-neutral-700 bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                                            : 'border-neutral-200 bg-neutral-100 text-neutral-500 hover:bg-neutral-200'
                                     }`}
                                 >
                                     <Icon size={16} className={selectedCategoryId === cat.id ? 'text-blue-400' : ''} />
@@ -571,7 +585,7 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
                 <button
                   type="submit"
                   disabled={!itemTitle || !selectedCategoryId}
-                  className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-neutral-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full py-3 font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${btnStyles}`}
                 >
                   {itemEditingId ? "Save Changes" : "Add Item"}
                 </button>
@@ -586,30 +600,30 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
         >
             <form onSubmit={handleCreateCategory} className="space-y-6">
                 <div>
-                    <label className="text-sm text-neutral-400">Category Name</label>
+                    <label className={`text-sm ${labelStyles}`}>Category Name</label>
                     <input
                         type="text"
                         required
                         value={catName}
                         onChange={(e) => setCatName(e.target.value)}
-                        className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className={`w-full border rounded-lg p-3 focus:outline-none focus:ring-2 ${inputStyles}`}
                         placeholder="e.g., Electronics, Clothes..."
                     />
                 </div>
 
                 <div className="space-y-2">
-                   <label className="text-sm text-neutral-400">Color</label>
+                   <label className={`text-sm ${labelStyles}`}>Color</label>
                    <ColorPicker selectedColor={catColor} onSelect={setCatColor} />
                 </div>
 
                 <div className="space-y-2">
-                   <label className="text-sm text-neutral-400">Icon</label>
+                   <label className={`text-sm ${labelStyles}`}>Icon</label>
                    <IconPicker selectedIcon={catIcon} onSelect={setCatIcon} />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-neutral-200 transition-colors"
+                  className={`w-full py-3 font-bold rounded-xl transition-colors ${btnStyles}`}
                 >
                   Save Category
                 </button>

@@ -48,7 +48,7 @@ export default function ImageReducer() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
   // Theme Helpers
-  const isDark = preferences ? getTextColor(preferences.backgroundColor) === '#ffffff' : true;
+  const isDark = preferences ? getTextColor(preferences.backgroundColor) === 'text-white' : true;
 
   const styles = {
     textPrimary: isDark ? 'text-white' : 'text-neutral-900',
