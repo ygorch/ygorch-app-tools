@@ -27,6 +27,19 @@ export const en = {
     reduction: "Reduction",
     estimatedDimensions: "Estimated dimensions: ~",
   },
+  deeplinkOpener: {
+    title: "Deeplink Opener",
+    placeholder: "myapp://path/to/content",
+    open: "Open",
+    generateQr: "Generate QR Code",
+    history: "History",
+    noHistory: "No history yet",
+    clearHistory: "Clear History",
+    opened: "Opened",
+    times: "times",
+    lastOpened: "Last opened",
+    delete: "Delete",
+  },
 };
 
 export const pt = {
@@ -58,6 +71,19 @@ export const pt = {
     reduction: "Redução",
     estimatedDimensions: "Dimensões estimadas: ~",
   },
+  deeplinkOpener: {
+    title: "Deeplink Opener",
+    placeholder: "myapp://caminho/para/conteudo",
+    open: "Abrir",
+    generateQr: "Gerar QR Code",
+    history: "Histórico",
+    noHistory: "Sem histórico ainda",
+    clearHistory: "Limpar Histórico",
+    opened: "Aberto",
+    times: "vezes",
+    lastOpened: "Última abertura",
+    delete: "Excluir",
+  },
 };
 
 export const es = {
@@ -88,5 +114,18 @@ export const es = {
     processed: "Procesado",
     reduction: "Reducción",
     estimatedDimensions: "Dimensiones estimadas: ~",
+  },
+  deeplinkOpener: {
+    title: "Deeplink Opener",
+    placeholder: "myapp://ruta/al/contenido",
+    open: "Abrir",
+    generateQr: "Generar Código QR",
+    history: "Historial",
+    noHistory: "No hay historial aún",
+    clearHistory: "Borrar Historial",
+    opened: "Abierto",
+    times: "veces",
+    lastOpened: "Última apertura",
+    delete: "Eliminar",
   },
 };
