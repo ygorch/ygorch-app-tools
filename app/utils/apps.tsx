@@ -1,12 +1,12 @@
 
-import { Image, Gift } from "lucide-react";
+import { Image, Gift, Smartphone } from "lucide-react";
 
 export interface AppDefinition {
   id: string;
   icon: React.ElementType; // Lucide icon component
   href: string;
   color: string;
-  translationKey: 'imageReducer' | 'wishlist'; // Key to look up in translations
+  translationKey: 'imageReducer' | 'wishlist' | 'deeplinkOpener'; // Key to look up in translations
   notification?: number;
 }
 
@@ -26,6 +26,14 @@ export const getApps = (t: any): AppDefinition[] => [
     icon: Gift,
     color: "bg-white/5 backdrop-blur-xl border border-white/10 group-hover:bg-white/10 group-hover:border-white/20",
     href: "/wishlist",
+    notification: 0,
+  },
+  {
+    id: "deeplink-opener",
+    translationKey: "deeplinkOpener",
+    icon: Smartphone,
+    color: "bg-white/5 backdrop-blur-xl border border-white/10 group-hover:bg-white/10 group-hover:border-white/20",
+    href: "/deeplink-opener",
     notification: 0,
   },
 ];
