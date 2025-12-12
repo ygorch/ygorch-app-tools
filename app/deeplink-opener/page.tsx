@@ -9,7 +9,7 @@ import { PageTransition } from "../components/ui/PageTransition";
 import { saveDeeplink, getDeeplinkHistory, deleteDeeplink, clearDeeplinkHistory, DeeplinkHistoryItem } from "../utils/deeplinkHistory";
 import { ExternalLink, QrCode, Trash2, Smartphone, Download, Share2, X, Camera } from "lucide-react";
 import QRCode from "react-qr-code";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5Qrcode } from "html5-qrcode";
 import { Toast, ToastType } from "../components/ui/Toast";
 
 export default function DeeplinkOpener() {
@@ -30,34 +30,44 @@ export default function DeeplinkOpener() {
   const isDark = preferences ? getTextColor(preferences.backgroundColor) === 'text-white' : true;
 
   useEffect(() => {
-    let scanner: Html5QrcodeScanner | null = null;
+    let html5QrCode: Html5Qrcode | null = null;
 
     if (isScanning) {
-      scanner = new Html5QrcodeScanner(
-        "reader",
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        false
-      );
+      html5QrCode = new Html5Qrcode("reader");
 
-      scanner.render(
+      const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+      html5QrCode.start(
+        { facingMode: "environment" },
+        config,
         (decodedText) => {
           setInput(decodedText);
-          setIsScanning(false);
-          scanner?.clear();
+          handleStopScanning(html5QrCode);
           handleOpen(decodedText);
         },
-        (error) => {
-          console.warn(error);
+        (errorMessage) => {
+           // console.warn(errorMessage);
         }
-      );
+      ).catch(err => {
+        console.error("Error starting scanner", err);
+        showToast(t.deeplinkOpener.cameraPermission, "error");
+        setIsScanning(false);
+      });
     }
 
     return () => {
-      if (scanner) {
-        scanner.clear().catch(console.error);
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().then(() => html5QrCode?.clear()).catch(console.error);
       }
     };
   }, [isScanning]);
+
+  const handleStopScanning = (scannerInstance?: Html5Qrcode | null) => {
+     setIsScanning(false);
+     if (scannerInstance) {
+         scannerInstance.stop().then(() => scannerInstance.clear()).catch(console.error);
+     }
+  };
 
   const downloadQrCode = () => {
     const svg = document.getElementById("qrcode-svg");
@@ -68,9 +78,7 @@ export default function DeeplinkOpener() {
     const ctx = canvas.getContext("2d");
     const img = new Image();
 
-    // Set canvas dimensions based on SVG viewbox or explicit size
-    // react-qr-code has 256 default here
-    canvas.width = 1024; // Higher res for download
+    canvas.width = 1024;
     canvas.height = 1024;
 
     img.onload = () => {
@@ -81,7 +89,12 @@ export default function DeeplinkOpener() {
 
       const pngFile = canvas.toDataURL("image/png");
       const downloadLink = document.createElement("a");
-      downloadLink.download = "qrcode.png";
+
+      // Sanitized filename: timestamp-myapp-path-to-screen.png
+      const sanitizedInput = input.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+      const filename = `${Date.now()}-${sanitizedInput}.png`;
+
+      downloadLink.download = filename;
       downloadLink.href = pngFile;
       downloadLink.click();
     };
@@ -228,26 +241,31 @@ export default function DeeplinkOpener() {
 
             <div className="flex gap-2 w-full sm:w-auto">
               <button
-                onClick={() => handleOpen()}
-                title={t.deeplinkOpener.open}
-                className="flex-1 sm:flex-none p-3 rounded-xl bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center"
-              >
-                <ExternalLink className="w-6 h-6" />
-              </button>
-              <button
                 onClick={() => setIsScanning(!isScanning)}
                 title={t.deeplinkOpener.scanQr}
                 className={`flex-1 sm:flex-none p-3 rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center border ${styles.glassButton} ${styles.border}`}
               >
                 <Camera className="w-6 h-6" />
               </button>
-              <button
-                onClick={handleGenerateQR}
-                title={t.deeplinkOpener.generateQr}
-                className={`flex-1 sm:flex-none p-3 rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center border ${styles.glassButton} ${styles.border}`}
-              >
-                <QrCode className="w-6 h-6" />
-              </button>
+
+              {input.length > 0 && (
+                <>
+                  <button
+                    onClick={() => handleOpen()}
+                    title={t.deeplinkOpener.open}
+                    className="flex-1 sm:flex-none p-3 rounded-xl bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center animate-in zoom-in duration-300"
+                  >
+                    <ExternalLink className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={handleGenerateQR}
+                    title={t.deeplinkOpener.generateQr}
+                    className={`flex-1 sm:flex-none p-3 rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center border animate-in zoom-in duration-300 ${styles.glassButton} ${styles.border}`}
+                  >
+                    <QrCode className="w-6 h-6" />
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -261,7 +279,7 @@ export default function DeeplinkOpener() {
                    <X className={`w-5 h-5 ${styles.textSecondary}`} />
                 </button>
              </div>
-             <div id="reader" className="overflow-hidden rounded-xl bg-black/5" />
+             <div id="reader" className="overflow-hidden rounded-xl bg-black/5 min-h-[300px]" />
           </div>
         )}
 
