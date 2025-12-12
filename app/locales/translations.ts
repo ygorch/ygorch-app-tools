@@ -39,6 +39,9 @@ export const en = {
     times: "times",
     lastOpened: "Last opened",
     delete: "Delete",
+    share: "Share",
+    download: "Download",
+    close: "Close",
   },
 };
 
@@ -83,6 +86,9 @@ export const pt = {
     times: "vezes",
     lastOpened: "Última abertura",
     delete: "Excluir",
+    share: "Compartilhar",
+    download: "Baixar",
+    close: "Fechar",
   },
 };
 
@@ -127,5 +133,8 @@ export const es = {
     times: "veces",
     lastOpened: "Última apertura",
     delete: "Eliminar",
+    share: "Compartir",
+    download: "Descargar",
+    close: "Cerrar",
   },
 };

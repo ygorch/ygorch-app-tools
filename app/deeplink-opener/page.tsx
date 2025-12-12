@@ -7,7 +7,7 @@ import { getTextColor } from "../utils/styles";
 import { Header } from "../components/ui/Header";
 import { PageTransition } from "../components/ui/PageTransition";
 import { saveDeeplink, getDeeplinkHistory, deleteDeeplink, clearDeeplinkHistory, DeeplinkHistoryItem } from "../utils/deeplinkHistory";
-import { ExternalLink, QrCode, Trash2, Smartphone } from "lucide-react";
+import { ExternalLink, QrCode, Trash2, Smartphone, Download, Share2, X } from "lucide-react";
 import QRCode from "react-qr-code";
 
 export default function DeeplinkOpener() {
@@ -20,6 +20,77 @@ export default function DeeplinkOpener() {
 
   // Theme Helpers
   const isDark = preferences ? getTextColor(preferences.backgroundColor) === 'text-white' : true;
+
+  const downloadQrCode = () => {
+    const svg = document.getElementById("qrcode-svg");
+    if (!svg) return;
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+
+    // Set canvas dimensions based on SVG viewbox or explicit size
+    // react-qr-code has 256 default here
+    canvas.width = 1024; // Higher res for download
+    canvas.height = 1024;
+
+    img.onload = () => {
+      if (!ctx) return;
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      const pngFile = canvas.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
+      downloadLink.download = "qrcode.png";
+      downloadLink.href = pngFile;
+      downloadLink.click();
+    };
+
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+  };
+
+  const shareQrCode = async () => {
+    const svg = document.getElementById("qrcode-svg");
+    if (!svg) return;
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+
+    canvas.width = 1024;
+    canvas.height = 1024;
+
+    img.onload = () => {
+       if (!ctx) return;
+       ctx.fillStyle = "white";
+       ctx.fillRect(0, 0, canvas.width, canvas.height);
+       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+       canvas.toBlob(async (blob) => {
+         if (!blob) return;
+         const file = new File([blob], "qrcode.png", { type: "image/png" });
+
+         if (navigator.share) {
+           try {
+             await navigator.share({
+               files: [file],
+               title: 'QR Code',
+               text: qrCodeValue || '',
+             });
+           } catch (error) {
+             console.error("Error sharing:", error);
+           }
+         } else {
+           alert("Web Share API not supported in this browser");
+         }
+       });
+    };
+
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+  };
 
   const styles = {
     textPrimary: isDark ? 'text-white' : 'text-neutral-900',
@@ -120,9 +191,18 @@ export default function DeeplinkOpener() {
 
         {/* QR Code Section */}
         {qrCodeValue && (
-          <div className="flex justify-center mb-8 animate-in fade-in zoom-in duration-300">
-            <div className="p-4 bg-white rounded-2xl shadow-xl">
+          <div className="flex flex-col items-center mb-8 animate-in fade-in zoom-in duration-300">
+            <div className="p-4 bg-white rounded-2xl shadow-xl relative group">
+              <button
+                onClick={() => setQrCodeValue(null)}
+                className="absolute -top-3 -right-3 bg-red-500 text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 hover:scale-110 z-10"
+                title={t.deeplinkOpener.close}
+              >
+                <X className="w-4 h-4" />
+              </button>
+
               <QRCode
+                id="qrcode-svg"
                 value={qrCodeValue}
                 size={256}
                 style={{ height: "auto", maxWidth: "100%", width: "100%" }}
@@ -131,6 +211,23 @@ export default function DeeplinkOpener() {
               <p className="text-center mt-2 text-sm text-neutral-500 font-mono break-all max-w-[256px]">
                 {qrCodeValue}
               </p>
+            </div>
+
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={downloadQrCode}
+                className={`px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-medium border transition-colors hover:bg-white/10 ${styles.border} ${styles.textPrimary}`}
+              >
+                <Download className="w-4 h-4" />
+                {t.deeplinkOpener.download}
+              </button>
+              <button
+                onClick={shareQrCode}
+                className={`px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-medium border transition-colors hover:bg-white/10 ${styles.border} ${styles.textPrimary}`}
+              >
+                <Share2 className="w-4 h-4" />
+                {t.deeplinkOpener.share}
+              </button>
             </div>
           </div>
         )}
