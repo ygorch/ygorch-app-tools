@@ -128,17 +128,36 @@ function DeeplinkContent() {
     const ctx = canvas.getContext("2d");
     const img = new Image();
 
-    canvas.width = 1024;
-    canvas.height = 1024;
+    // QR Code size = 1024x1024
+    // Text area = 100px height
+    // Margin = 50px
+    const qrSize = 1024;
+    const textAreaHeight = 120;
+    const margin = 50;
+
+    canvas.width = qrSize;
+    canvas.height = qrSize + textAreaHeight;
 
     img.onload = () => {
        if (!ctx) return;
        ctx.fillStyle = "white";
        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-       // Add margin
-       const margin = 50;
-       ctx.drawImage(img, margin, margin, canvas.width - (margin * 2), canvas.height - (margin * 2));
+       // Draw QR Code centered horizontally, with margin top
+       ctx.drawImage(img, margin, margin, qrSize - (margin * 2), qrSize - (margin * 2));
+
+       // Draw URL Text
+       const shareUrl = typeof window !== 'undefined'
+          ? `${window.location.origin}${window.location.pathname}?link=${encodeURIComponent(input)}`
+          : input;
+
+       ctx.font = "bold 24px sans-serif";
+       ctx.fillStyle = "#000000";
+       ctx.textAlign = "center";
+       ctx.textBaseline = "middle";
+
+       // Draw text in the footer area
+       ctx.fillText(shareUrl, canvas.width / 2, qrSize + (textAreaHeight / 2) - 10);
 
        canvas.toBlob(async (blob) => {
          if (!blob) return;
@@ -146,10 +165,6 @@ function DeeplinkContent() {
 
          if (navigator.share) {
            try {
-             const shareUrl = typeof window !== 'undefined'
-                ? `${window.location.origin}${window.location.pathname}?link=${encodeURIComponent(input)}`
-                : input;
-
              await navigator.share({
                files: [file],
                title: 'QR Code',
