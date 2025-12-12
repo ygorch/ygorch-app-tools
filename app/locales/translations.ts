@@ -42,6 +42,10 @@ export const en = {
     share: "Share",
     download: "Download",
     close: "Close",
+    scanQr: "Scan QR",
+    cameraPermission: "We need camera permission to scan QR codes",
+    appNotFound: "Application not found or not installed",
+    stopScan: "Stop Scanning",
   },
 };
 
@@ -89,6 +93,10 @@ export const pt = {
     share: "Compartilhar",
     download: "Baixar",
     close: "Fechar",
+    scanQr: "Escanear QR",
+    cameraPermission: "Precisamos da permissão da câmera para escanear QR codes",
+    appNotFound: "Aplicativo não encontrado ou não instalado",
+    stopScan: "Parar Escaneamento",
   },
 };
 
@@ -136,5 +144,9 @@ export const es = {
     share: "Compartir",
     download: "Descargar",
     close: "Cerrar",
+    scanQr: "Escanear QR",
+    cameraPermission: "Necesitamos permiso de cámara para escanear códigos QR",
+    appNotFound: "Aplicación no encontrada o no instalada",
+    stopScan: "Detener Escaneo",
   },
 };

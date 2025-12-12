@@ -7,8 +7,10 @@ import { getTextColor } from "../utils/styles";
 import { Header } from "../components/ui/Header";
 import { PageTransition } from "../components/ui/PageTransition";
 import { saveDeeplink, getDeeplinkHistory, deleteDeeplink, clearDeeplinkHistory, DeeplinkHistoryItem } from "../utils/deeplinkHistory";
-import { ExternalLink, QrCode, Trash2, Smartphone, Download, Share2, X } from "lucide-react";
+import { ExternalLink, QrCode, Trash2, Smartphone, Download, Share2, X, Camera } from "lucide-react";
 import QRCode from "react-qr-code";
+import { Html5QrcodeScanner } from "html5-qrcode";
+import { Toast, ToastType } from "../components/ui/Toast";
 
 export default function DeeplinkOpener() {
   const { t } = useLanguage();
@@ -17,9 +19,45 @@ export default function DeeplinkOpener() {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<DeeplinkHistoryItem[]>([]);
   const [qrCodeValue, setQrCodeValue] = useState<string | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: ToastType; isVisible: boolean }>({
+    message: "",
+    type: "info",
+    isVisible: false,
+  });
 
   // Theme Helpers
   const isDark = preferences ? getTextColor(preferences.backgroundColor) === 'text-white' : true;
+
+  useEffect(() => {
+    let scanner: Html5QrcodeScanner | null = null;
+
+    if (isScanning) {
+      scanner = new Html5QrcodeScanner(
+        "reader",
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        false
+      );
+
+      scanner.render(
+        (decodedText) => {
+          setInput(decodedText);
+          setIsScanning(false);
+          scanner?.clear();
+          handleOpen(decodedText);
+        },
+        (error) => {
+          console.warn(error);
+        }
+      );
+    }
+
+    return () => {
+      if (scanner) {
+        scanner.clear().catch(console.error);
+      }
+    };
+  }, [isScanning]);
 
   const downloadQrCode = () => {
     const svg = document.getElementById("qrcode-svg");
@@ -111,15 +149,33 @@ export default function DeeplinkOpener() {
     setHistory(items.sort((a, b) => b.timestamp - a.timestamp));
   };
 
-  const handleOpen = async () => {
-    if (!input) return;
+  const showToast = (message: string, type: ToastType = "info") => {
+    setToast({ message, type, isVisible: true });
+  };
+
+  const hideToast = () => {
+    setToast((prev) => ({ ...prev, isVisible: false }));
+  };
+
+  const handleOpen = async (urlOverride?: string) => {
+    const urlToOpen = urlOverride || input;
+    if (!urlToOpen) return;
 
     // Save to history first
-    await saveDeeplink(input);
+    await saveDeeplink(urlToOpen);
     await loadHistory();
 
-    // Execute
-    window.location.href = input;
+    // Try to open
+    const start = Date.now();
+    window.location.href = urlToOpen;
+
+    // Fallback detection logic
+    // If the browser is still visible after a short delay, likely the app didn't open
+    setTimeout(() => {
+      if (!document.hidden && Date.now() - start < 2000) {
+         showToast(t.deeplinkOpener.appNotFound, "error");
+      }
+    }, 1500);
   };
 
   const handleGenerateQR = async () => {
@@ -172,11 +228,18 @@ export default function DeeplinkOpener() {
 
             <div className="flex gap-2 w-full sm:w-auto">
               <button
-                onClick={handleOpen}
+                onClick={() => handleOpen()}
                 title={t.deeplinkOpener.open}
                 className="flex-1 sm:flex-none p-3 rounded-xl bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center"
               >
                 <ExternalLink className="w-6 h-6" />
+              </button>
+              <button
+                onClick={() => setIsScanning(!isScanning)}
+                title={t.deeplinkOpener.scanQr}
+                className={`flex-1 sm:flex-none p-3 rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center border ${styles.glassButton} ${styles.border}`}
+              >
+                <Camera className="w-6 h-6" />
               </button>
               <button
                 onClick={handleGenerateQR}
@@ -188,6 +251,19 @@ export default function DeeplinkOpener() {
             </div>
           </div>
         </div>
+
+        {/* Scanner Section */}
+        {isScanning && (
+          <div className={`mb-8 p-4 rounded-3xl border ${styles.glassPanel} animate-in fade-in slide-in-from-top-4`}>
+             <div className="flex justify-between items-center mb-4">
+                <h3 className={`font-medium ${styles.textPrimary}`}>{t.deeplinkOpener.scanQr}</h3>
+                <button onClick={() => setIsScanning(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                   <X className={`w-5 h-5 ${styles.textSecondary}`} />
+                </button>
+             </div>
+             <div id="reader" className="overflow-hidden rounded-xl bg-black/5" />
+          </div>
+        )}
 
         {/* QR Code Section */}
         {qrCodeValue && (
@@ -275,6 +351,13 @@ export default function DeeplinkOpener() {
         )}
 
       </PageTransition>
+
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
     </div>
   );
 }
