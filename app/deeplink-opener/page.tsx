@@ -346,7 +346,7 @@ function DeeplinkContent() {
             <div className="p-4 bg-white rounded-2xl shadow-xl relative group">
               <button
                 onClick={() => setQrCodeValue(null)}
-                className="absolute -top-3 -right-3 bg-red-500 text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 hover:scale-110 z-10"
+                className="absolute -top-3 -right-3 bg-red-500 text-white p-1.5 rounded-full shadow-lg transition-all hover:bg-red-600 hover:scale-110 z-10"
                 title={t.deeplinkOpener.close}
               >
                 <X className="w-4 h-4" />

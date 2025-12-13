@@ -1,0 +1,16 @@
+{
+  "name": "Ygor's Tools",
+  "short_name": "YTools",
+  "description": "A collection of useful tools",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/globe.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
