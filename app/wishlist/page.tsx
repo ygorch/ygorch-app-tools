@@ -268,7 +268,7 @@ export default function WishlistHome() {
     <div className={`min-h-screen ${textColor}`}>
       <Header title="My Wishlists" />
 
-      <PageTransition className="px-8 pb-8 pt-32 max-w-6xl mx-auto">
+      <PageTransition className="px-8 pb-8 pt-24 max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-10">
           <div>
              <h1 className={`text-3xl font-bold ${textColor}`}>

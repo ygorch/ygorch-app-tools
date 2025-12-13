@@ -119,6 +119,34 @@ function DeeplinkContent() {
     img.src = "data:image/svg+xml;base64," + btoa(svgData);
   };
 
+  const handleShareLink = async () => {
+    if (!input) return;
+
+    const shareUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}${window.location.pathname}?link=${encodeURIComponent(input)}`
+      : input;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Deeplink',
+          text: `${input}\n\n${shareUrl}`,
+          url: shareUrl,
+        });
+      } catch (error) {
+        console.error("Error sharing:", error);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        showToast("Link copied to clipboard", "success");
+      } catch (err) {
+        console.error("Error copying to clipboard", err);
+        showToast("Unable to share", "error");
+      }
+    }
+  };
+
   const shareQrCode = async () => {
     const svg = document.getElementById("qrcode-svg");
     if (!svg) return;
@@ -129,14 +157,12 @@ function DeeplinkContent() {
     const img = new Image();
 
     // QR Code size = 1024x1024
-    // Text area = 100px height
     // Margin = 50px
     const qrSize = 1024;
-    const textAreaHeight = 120;
     const margin = 50;
 
     canvas.width = qrSize;
-    canvas.height = qrSize + textAreaHeight;
+    canvas.height = qrSize;
 
     img.onload = () => {
        if (!ctx) return;
@@ -146,19 +172,6 @@ function DeeplinkContent() {
        // Draw QR Code centered horizontally, with margin top
        ctx.drawImage(img, margin, margin, qrSize - (margin * 2), qrSize - (margin * 2));
 
-       // Draw URL Text
-       const shareUrl = typeof window !== 'undefined'
-          ? `${window.location.origin}${window.location.pathname}?link=${encodeURIComponent(input)}`
-          : input;
-
-       ctx.font = "bold 24px sans-serif";
-       ctx.fillStyle = "#000000";
-       ctx.textAlign = "center";
-       ctx.textBaseline = "middle";
-
-       // Draw text in the footer area
-       ctx.fillText(shareUrl, canvas.width / 2, qrSize + (textAreaHeight / 2) - 10);
-
        canvas.toBlob(async (blob) => {
          if (!blob) return;
          const file = new File([blob], "qrcode.png", { type: "image/png" });
@@ -167,9 +180,6 @@ function DeeplinkContent() {
            try {
              await navigator.share({
                files: [file],
-               title: 'QR Code',
-               text: `Open this deeplink: ${shareUrl}`,
-               url: shareUrl,
              });
            } catch (error) {
              console.error("Error sharing:", error);
@@ -261,7 +271,7 @@ function DeeplinkContent() {
     <div className="min-h-screen">
       <Header title={t.deeplinkOpener.title} />
 
-      <PageTransition className="px-4 md:px-8 pb-4 md:pb-8 pt-32 max-w-3xl mx-auto">
+      <PageTransition className="px-4 md:px-8 pb-4 md:pb-8 pt-20 md:pt-24 max-w-3xl mx-auto">
 
         {/* Input Section */}
         <div className={`backdrop-blur-xl rounded-3xl p-6 mb-8 border transition-colors duration-300 ${styles.glassPanel}`}>
@@ -298,6 +308,13 @@ function DeeplinkContent() {
                     <ExternalLink className="w-6 h-6" />
                   </button>
                   <button
+                    onClick={handleShareLink}
+                    title={t.deeplinkOpener.share}
+                    className={`flex-1 sm:flex-none p-3 rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center border animate-in zoom-in duration-300 ${styles.glassButton} ${styles.border}`}
+                  >
+                    <Share2 className="w-6 h-6" />
+                  </button>
+                  <button
                     onClick={handleGenerateQR}
                     title={t.deeplinkOpener.generateQr}
                     className={`flex-1 sm:flex-none p-3 rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center border animate-in zoom-in duration-300 ${styles.glassButton} ${styles.border}`}
@@ -329,7 +346,7 @@ function DeeplinkContent() {
             <div className="p-4 bg-white rounded-2xl shadow-xl relative group">
               <button
                 onClick={() => setQrCodeValue(null)}
-                className="absolute -top-3 -right-3 bg-red-500 text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 hover:scale-110 z-10"
+                className="absolute -top-3 -right-3 bg-red-500 text-white p-1.5 rounded-full shadow-lg transition-all hover:bg-red-600 hover:scale-110 z-10"
                 title={t.deeplinkOpener.close}
               >
                 <X className="w-4 h-4" />
