@@ -337,7 +337,7 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
     <div className="min-h-screen bg-neutral-950 text-white">
       <Header title={list.title} backUrl="/wishlist" />
 
-      <PageTransition className="px-6 md:px-8 pb-6 md:pb-8 pt-32 max-w-5xl mx-auto">
+      <PageTransition className="px-6 md:px-8 pb-6 md:pb-8 pt-20 md:pt-24 max-w-5xl mx-auto">
 
         {/* List Details Header */}
         <div className="relative rounded-3xl overflow-hidden mb-8 bg-neutral-900 border border-white/5">

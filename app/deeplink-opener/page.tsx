@@ -130,7 +130,7 @@ function DeeplinkContent() {
       try {
         await navigator.share({
           title: 'Deeplink',
-          text: `Open this deeplink: ${input}`,
+          text: `${input}\n\n${shareUrl}`,
           url: shareUrl,
         });
       } catch (error) {
@@ -271,7 +271,7 @@ function DeeplinkContent() {
     <div className="min-h-screen">
       <Header title={t.deeplinkOpener.title} />
 
-      <PageTransition className="px-4 md:px-8 pb-4 md:pb-8 pt-32 max-w-3xl mx-auto">
+      <PageTransition className="px-4 md:px-8 pb-4 md:pb-8 pt-20 md:pt-24 max-w-3xl mx-auto">
 
         {/* Input Section */}
         <div className={`backdrop-blur-xl rounded-3xl p-6 mb-8 border transition-colors duration-300 ${styles.glassPanel}`}>
