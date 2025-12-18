@@ -36,7 +36,7 @@ export function Header({ title, backUrl = "/", className }: HeaderProps) {
 
         {title && (
             <div className="absolute left-1/2 transform -translate-x-1/2">
-                <span className="text-sm font-medium text-white/90">{title}</span>
+                <span className="text-xl font-serif tracking-wide text-white/90">{title}</span>
             </div>
         )}
       </div>

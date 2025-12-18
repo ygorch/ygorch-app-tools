@@ -17,7 +17,7 @@ export const getApps = (t: any): AppDefinition[] => [
     translationKey: "imageReducer",
     icon: Image,
     color: "bg-white/5 backdrop-blur-xl border border-white/10 group-hover:bg-white/10 group-hover:border-white/20",
-    href: "/image-reducer",
+    href: "/ireducer",
     notification: 0,
   },
   {
@@ -33,7 +33,7 @@ export const getApps = (t: any): AppDefinition[] => [
     translationKey: "deeplinkOpener",
     icon: Smartphone,
     color: "bg-white/5 backdrop-blur-xl border border-white/10 group-hover:bg-white/10 group-hover:border-white/20",
-    href: "/deeplink-opener",
+    href: "/deeplink",
     notification: 0,
   },
 ];

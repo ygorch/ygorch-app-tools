@@ -15,7 +15,21 @@ const nextConfig: NextConfig = {
   /* config options here */
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  turbopack: {}
+  turbopack: {},
+  async redirects() {
+    return [
+      {
+        source: '/image-reducer',
+        destination: '/ireducer',
+        permanent: true,
+      },
+      {
+        source: '/deeplink-opener',
+        destination: '/deeplink',
+        permanent: true,
+      },
+    ]
+  },
 };
 
 export default pwaConfig(nextConfig);

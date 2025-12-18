@@ -1,12 +1,23 @@
 
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Instrument_Serif, Manrope } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "./hooks/useLanguage";
 import { PreferencesProvider } from "./hooks/usePreferences";
 import { TransitionShell } from "./components/TransitionShell";
 
-const inter = Inter({ subsets: ["latin"] });
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-instrument-serif",
+  display: "swap",
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-manrope",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Ygor's Tools",
@@ -20,8 +31,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className={`${manrope.variable} ${instrumentSerif.variable}`}>
+      <body className="antialiased font-sans">
         <LanguageProvider>
           <PreferencesProvider>
             <TransitionShell>
