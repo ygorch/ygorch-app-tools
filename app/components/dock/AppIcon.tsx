@@ -44,7 +44,7 @@ export function AppIcon({ app, name, isActive, onClick }: AppIconProps) {
                 layoutId={`app-icon-symbol-${app.id}`}
                 className="text-white"
             >
-                <Icon className={`w-10 h-10 ${app.id === 'image-reducer' ? 'text-blue-200' : 'text-pink-200'}`} />
+                <Icon className={`w-10 h-10 ${app.id === 'image-reducer' ? 'text-orange-200' : 'text-pink-200'}`} />
             </motion.div>
 
             {/* Notification Badge */}

@@ -16,7 +16,6 @@ const COLORS = [
   { name: 'Teal', class: 'bg-teal-500' },
   { name: 'Cyan', class: 'bg-cyan-500' },
   { name: 'Sky', class: 'bg-sky-500' },
-  { name: 'Blue', class: 'bg-blue-500' },
   { name: 'Indigo', class: 'bg-indigo-500' },
   { name: 'Violet', class: 'bg-violet-500' },
   { name: 'Purple', class: 'bg-purple-500' },

@@ -7,6 +7,10 @@
 
   --font-sans: var(--font-manrope);
   --font-serif: var(--font-instrument-serif);
+
+  --color-orange-500: #ff9900;
+  --color-orange-600: #e68a00;
+  --color-orange-400: #ffad33;
 }
 
 @layer base {

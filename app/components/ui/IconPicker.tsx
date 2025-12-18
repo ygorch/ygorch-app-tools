@@ -73,7 +73,7 @@ export function IconPicker({ selectedIcon, onSelect }: IconPickerProps) {
                     onClick={() => onSelect(iconName)}
                     className={`p-2 rounded-lg flex items-center justify-center transition-all aspect-square ${
                     isSelected
-                        ? 'bg-blue-600 text-white shadow-lg scale-110 ring-2 ring-blue-400'
+                        ? 'bg-orange-600 text-white shadow-lg scale-110 ring-2 ring-orange-400'
                         : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white'
                     }`}
                     title={iconName}
@@ -94,7 +94,7 @@ export function IconPicker({ selectedIcon, onSelect }: IconPickerProps) {
                             onClick={() => onSelect(emoji)}
                             className={`p-2 rounded-lg flex items-center justify-center transition-all text-xl aspect-square ${
                             isSelected
-                                ? 'bg-blue-600 text-white shadow-lg scale-110 ring-2 ring-blue-400'
+                                ? 'bg-orange-600 text-white shadow-lg scale-110 ring-2 ring-orange-400'
                                 : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white'
                             }`}
                         >

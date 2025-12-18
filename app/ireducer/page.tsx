@@ -56,7 +56,7 @@ export default function ImageReducer() {
     glassPanel: isDark ? 'bg-black/40 border-white/5' : 'bg-white/40 border-black/5',
     glassButton: isDark ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-black/5 hover:bg-black/10 text-neutral-900',
     glassInput: isDark ? 'bg-black/20 border-white/10' : 'bg-white/20 border-black/10',
-    accentActive: 'bg-blue-500 text-white shadow-lg shadow-blue-500/20',
+    accentActive: 'bg-orange-500 text-white shadow-lg shadow-orange-500/20',
     border: isDark ? 'border-white/10' : 'border-black/10',
     dashedBorder: isDark ? 'border-white/20' : 'border-black/20',
   };
@@ -206,7 +206,7 @@ export default function ImageReducer() {
               <div
                 className={`aspect-video rounded-2xl border-2 border-dashed flex flex-col items-center justify-center p-4 relative overflow-hidden transition-all duration-300 ${
                   dragActive
-                    ? "border-blue-500 bg-blue-500/10"
+                    ? "border-orange-500 bg-orange-500/10"
                     : `${styles.dashedBorder} hover:bg-black/5`
                 }`}
                 onDragEnter={handleDrag}
@@ -413,7 +413,7 @@ export default function ImageReducer() {
                     <button
                       onClick={handleProcess}
                       disabled={processing}
-                      className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg shadow-orange-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
                     >
                       {processing ? (
                           <>
@@ -459,7 +459,7 @@ export default function ImageReducer() {
                        <a
                         href={getDownloadUrl(item.processedBlob)}
                         download={`history-${item.originalName}`}
-                        className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
+                        className="p-2 text-orange-400 hover:bg-orange-500/10 rounded-lg transition-colors"
                        >
                            <Download className="w-4 h-4" />
                        </a>

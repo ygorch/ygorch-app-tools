@@ -37,8 +37,8 @@ export default function WishlistHome() {
 
   // Theme styles for form inputs
   const inputStyles = isDark
-    ? "bg-neutral-800 border-neutral-700 text-white placeholder-neutral-400 focus:ring-blue-500"
-    : "bg-neutral-100 border-neutral-200 text-neutral-900 placeholder-neutral-500 focus:ring-blue-500";
+    ? "bg-neutral-800 border-neutral-700 text-white placeholder-neutral-400 focus:ring-orange-500"
+    : "bg-neutral-100 border-neutral-200 text-neutral-900 placeholder-neutral-500 focus:ring-orange-500";
 
   const labelStyles = isDark ? "text-neutral-400" : "text-neutral-600";
 
@@ -46,7 +46,7 @@ export default function WishlistHome() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [color, setColor] = useState('bg-blue-500');
+  const [color, setColor] = useState('bg-orange-500');
   const [iconName, setIconName] = useState('Gift');
   const [thumbnail, setThumbnail] = useState<Blob | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
@@ -71,7 +71,7 @@ export default function WishlistHome() {
     setEditingId(null);
     setTitle('');
     setDescription('');
-    setColor('bg-blue-500');
+    setColor('bg-orange-500');
     setIconName('Gift');
     setThumbnail(null);
     setThumbnailPreview(null);
@@ -329,7 +329,7 @@ export default function WishlistHome() {
                       <div className="absolute top-4 right-4 flex gap-2 z-10">
                         <button
                           onClick={(e) => handleEditList(e, list)}
-                          className="p-2 bg-black/50 hover:bg-blue-600/80 rounded-full backdrop-blur-sm text-white transition-colors md:opacity-0 group-hover:opacity-100"
+                          className="p-2 bg-black/50 hover:bg-orange-600/80 rounded-full backdrop-blur-sm text-white transition-colors md:opacity-0 group-hover:opacity-100"
                           title="Edit"
                         >
                           <LucideIcons.Edit2 size={16} />
@@ -371,7 +371,7 @@ export default function WishlistHome() {
 
                       {/* Content */}
                       <div>
-                        <h3 className="text-xl font-bold truncate group-hover:text-blue-200 transition-colors">{list.title}</h3>
+                        <h3 className="text-xl font-bold truncate group-hover:text-orange-200 transition-colors">{list.title}</h3>
                         <p className="text-neutral-400 text-sm line-clamp-2 mt-1">
                           {list.description || 'No description'}
                         </p>
