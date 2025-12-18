@@ -285,7 +285,7 @@ function DeeplinkContent() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={t.deeplinkOpener.placeholder}
-                className={`w-full pl-10 pr-4 py-3 rounded-xl border outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ${styles.glassInput}`}
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border outline-none focus:ring-2 focus:ring-orange-500/50 transition-all ${styles.glassInput}`}
               />
             </div>
 
@@ -303,7 +303,7 @@ function DeeplinkContent() {
                   <button
                     onClick={() => handleOpen()}
                     title={t.deeplinkOpener.open}
-                    className="flex-1 sm:flex-none p-3 rounded-xl bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center animate-in zoom-in duration-300"
+                    className="flex-1 sm:flex-none p-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center animate-in zoom-in duration-300"
                   >
                     <ExternalLink className="w-6 h-6" />
                   </button>

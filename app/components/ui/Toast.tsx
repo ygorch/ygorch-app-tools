@@ -29,7 +29,7 @@ export function Toast({ message, type = "info", isVisible, onClose, duration = 3
   const bgColors = {
     success: "bg-green-500",
     error: "bg-red-500",
-    info: "bg-blue-500",
+    info: "bg-orange-500",
   };
 
   const Icons = {

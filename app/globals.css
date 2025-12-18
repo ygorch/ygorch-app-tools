@@ -4,11 +4,18 @@
   --color-glass-bg: rgba(255, 255, 255, 0.05);
   --color-glass-border: rgba(255, 255, 255, 0.1);
   --color-glass-hover: rgba(255, 255, 255, 0.1);
+
+  --font-sans: var(--font-manrope);
+  --font-serif: var(--font-instrument-serif);
+
+  --color-orange-500: #ff9900;
+  --color-orange-600: #e68a00;
+  --color-orange-400: #ffad33;
 }
 
 @layer base {
   body {
-    @apply bg-neutral-950 text-gray-200 antialiased;
+    @apply bg-neutral-950 text-gray-200 antialiased font-sans;
     background-image:
       radial-gradient(at 0% 0%, rgba(50, 50, 50, 0.15) 0px, transparent 50%),
       radial-gradient(at 100% 0%, rgba(30, 30, 30, 0.15) 0px, transparent 50%);

@@ -48,8 +48,8 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
 
   // Theme styles for form inputs
   const inputStyles = isDark
-    ? "bg-neutral-800 border-neutral-700 text-white placeholder-neutral-400 focus:ring-blue-500"
-    : "bg-neutral-100 border-neutral-200 text-neutral-900 placeholder-neutral-500 focus:ring-blue-500";
+    ? "bg-neutral-800 border-neutral-700 text-white placeholder-neutral-400 focus:ring-orange-500"
+    : "bg-neutral-100 border-neutral-200 text-neutral-900 placeholder-neutral-500 focus:ring-orange-500";
 
   const labelStyles = isDark ? "text-neutral-400" : "text-neutral-600";
   const btnStyles = isDark ? "bg-white text-black hover:bg-neutral-200" : "bg-neutral-900 text-white hover:bg-neutral-700";
@@ -69,7 +69,7 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
 
   // Category Form State
   const [catName, setCatName] = useState('');
-  const [catColor, setCatColor] = useState('bg-blue-500');
+  const [catColor, setCatColor] = useState('bg-orange-500');
   const [catIcon, setCatIcon] = useState('Tag');
 
   const loadData = useCallback(async () => {
@@ -162,7 +162,7 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
 
   const resetCategoryForm = () => {
     setCatName('');
-    setCatColor('bg-blue-500');
+    setCatColor('bg-orange-500');
     setCatIcon('Tag');
   };
 
@@ -435,7 +435,7 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
                                 <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button
                                         onClick={() => handleEditItem(item)}
-                                        className="p-2 text-neutral-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
+                                        className="p-2 text-neutral-500 hover:text-orange-400 hover:bg-orange-500/10 rounded-lg transition-colors"
                                         title="Edit"
                                     >
                                         <LucideIcons.Edit2 size={18} />
@@ -468,7 +468,7 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
                 <button
                     onClick={handleImportClick}
                     title="Import JSON"
-                    className="p-3 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-xl transition-all hover:scale-105 active:scale-95"
+                    className="p-3 text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 rounded-xl transition-all hover:scale-105 active:scale-95"
                 >
                     <LucideIcons.Upload size={20} />
                 </button>
@@ -518,7 +518,7 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
             <form onSubmit={handleSubmitItem} className="space-y-4">
                 <div>
                     <label className={`block text-sm mb-1 ${labelStyles}`}>Product URL (Optional)</label>
-                    <div className={`flex items-center gap-2 rounded-lg border focus-within:ring-2 focus-within:ring-blue-500 px-3 ${inputStyles.replace('focus:ring-blue-500', '')}`}>
+                    <div className={`flex items-center gap-2 rounded-lg border focus-within:ring-2 focus-within:ring-orange-500 px-3 ${inputStyles.replace('focus:ring-orange-500', '')}`}>
                         <LucideIcons.Link size={16} className="text-neutral-500" />
                         <input
                            type="url"
@@ -548,7 +548,7 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
                         <button
                            type="button"
                            onClick={() => { setIsItemModalOpen(false); setIsCategoryModalOpen(true); }}
-                           className="text-xs text-blue-400 hover:text-blue-300"
+                           className="text-xs text-orange-400 hover:text-orange-300"
                         >
                             + New Category
                         </button>
@@ -565,13 +565,13 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
                                     onClick={() => setSelectedCategoryId(cat.id)}
                                     className={`p-3 rounded-lg border flex items-center gap-2 transition-all ${
                                         selectedCategoryId === cat.id
-                                        ? `border-blue-500 bg-blue-500/10 ${isDark ? 'text-white' : 'text-black'}`
+                                        ? `border-orange-500 bg-orange-500/10 ${isDark ? 'text-white' : 'text-black'}`
                                         : isDark
                                             ? 'border-neutral-700 bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
                                             : 'border-neutral-200 bg-neutral-100 text-neutral-500 hover:bg-neutral-200'
                                     }`}
                                 >
-                                    <Icon size={16} className={selectedCategoryId === cat.id ? 'text-blue-400' : ''} />
+                                    <Icon size={16} className={selectedCategoryId === cat.id ? 'text-orange-400' : ''} />
                                     <span className="truncate text-sm">{cat.name}</span>
                                 </button>
                             );

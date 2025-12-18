@@ -34,7 +34,7 @@ export function HomeScreen() {
 
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
-      <h1 className={`text-3xl font-light tracking-wide mb-16 text-center drop-shadow-lg transition-all duration-300 ${textColor}`}
+      <h1 className={`text-5xl font-serif tracking-wide mb-16 text-center drop-shadow-lg transition-all duration-300 ${textColor}`}
           style={{ opacity: activeAppId ? 0 : 1 }}>
         {t.hub.title}
       </h1>
