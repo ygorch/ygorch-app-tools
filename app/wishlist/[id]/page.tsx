@@ -26,6 +26,7 @@ import { PageTransition } from '@/app/components/ui/PageTransition';
 import { motion } from 'framer-motion';
 import { usePreferences } from '@/app/hooks/usePreferences';
 import { getTextColor } from '@/app/utils/styles';
+import { useObjectUrl } from '@/app/hooks/useObjectUrl';
 
 function getFaviconUrl(url: string) {
   try {
@@ -71,6 +72,8 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
   const [catName, setCatName] = useState('');
   const [catColor, setCatColor] = useState('bg-orange-500');
   const [catIcon, setCatIcon] = useState('Tag');
+
+  const thumbnailPreviewUrl = useObjectUrl(list?.thumbnailBlob);
 
   const loadData = useCallback(async () => {
     const listData = await getListById(id);
@@ -344,8 +347,8 @@ export default function WishlistDetail({ params }: { params: Promise<{ id: strin
            <div className={`absolute inset-0 opacity-20 ${list.color}`}></div>
            <div className="relative z-10 p-8 flex flex-row items-center gap-6">
               <div className="w-24 h-24 rounded-2xl bg-black/30 backdrop-blur-md flex-shrink-0 flex items-center justify-center border border-white/10 overflow-hidden">
-                 {list.thumbnailBlob ? (
-                    <Image src={URL.createObjectURL(list.thumbnailBlob)} alt={list.title} width={96} height={96} className="object-cover w-full h-full" />
+                 {list.thumbnailBlob && thumbnailPreviewUrl ? (
+                    <Image src={thumbnailPreviewUrl} alt={list.title} width={96} height={96} className="object-cover w-full h-full" />
                  ) : (
                     isEmoji ? (
                         <span className="text-5xl">{list.iconName}</span>

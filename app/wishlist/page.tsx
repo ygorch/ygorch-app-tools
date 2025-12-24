@@ -24,6 +24,7 @@ import { usePreferences } from '@/app/hooks/usePreferences';
 import { getTextColor } from '@/app/utils/styles';
 import { WishlistCard } from './WishlistCard';
 import Image from 'next/image';
+import { useObjectUrl } from '@/app/hooks/useObjectUrl';
 
 export default function WishlistHome() {
   const { preferences } = usePreferences();
@@ -48,20 +49,12 @@ export default function WishlistHome() {
   const [color, setColor] = useState('bg-orange-500');
   const [iconName, setIconName] = useState('Gift');
   const [thumbnail, setThumbnail] = useState<Blob | null>(null);
-  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+
+  const thumbnailPreviewUrl = useObjectUrl(thumbnail);
 
   useEffect(() => {
     loadLists();
   }, []);
-
-  // Fix: Cleanup thumbnail preview URL on unmount or change
-  useEffect(() => {
-    return () => {
-      if (thumbnailPreview) {
-        URL.revokeObjectURL(thumbnailPreview);
-      }
-    };
-  }, [thumbnailPreview]);
 
   const loadLists = async () => {
     try {
@@ -82,8 +75,6 @@ export default function WishlistHome() {
     setColor('bg-orange-500');
     setIconName('Gift');
     setThumbnail(null);
-    // Note: The useEffect will cleanup the previous URL when thumbnailPreview changes
-    setThumbnailPreview(null);
   };
 
   const handleEditList = (e: React.MouseEvent, list: WishlistList) => {
@@ -96,13 +87,6 @@ export default function WishlistHome() {
     setColor(list.color);
     setIconName(list.iconName);
     setThumbnail(list.thumbnailBlob || null);
-    if (list.thumbnailBlob) {
-        // The previous URL is revoked by the useEffect before this new one is set (if it triggers a render)
-        // or we rely on the state update lifecycle.
-        setThumbnailPreview(URL.createObjectURL(list.thumbnailBlob));
-    } else {
-        setThumbnailPreview(null);
-    }
 
     setIsModalOpen(true);
   };
@@ -119,7 +103,6 @@ export default function WishlistHome() {
       };
       const compressedFile = await imageCompression(file, options);
       setThumbnail(compressedFile);
-      setThumbnailPreview(URL.createObjectURL(compressedFile));
     } catch (error) {
       console.error('Error compressing image:', error);
     }
@@ -353,8 +336,8 @@ export default function WishlistHome() {
             {/* Thumbnail Upload */}
             <div className="flex flex-col items-center gap-4">
                <div className={`w-32 h-32 rounded-2xl border-2 border-dashed ${isDark ? 'border-neutral-600' : 'border-neutral-300'} flex items-center justify-center overflow-hidden relative ${color} bg-opacity-10`}>
-                  {thumbnailPreview ? (
-                    <Image src={thumbnailPreview} alt="Preview" fill className="object-cover" />
+                  {thumbnailPreviewUrl ? (
+                    <Image src={thumbnailPreviewUrl} alt="Preview" fill className="object-cover" />
                   ) : (
                     <div className="text-center p-2 flex flex-col items-center justify-center">
                        {(() => {
@@ -375,7 +358,7 @@ export default function WishlistHome() {
                   <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                </label>
                {thumbnail && (
-                 <button type="button" onClick={() => { setThumbnail(null); setThumbnailPreview(null); }} className="text-xs text-red-400 hover:text-red-300">
+                 <button type="button" onClick={() => { setThumbnail(null); }} className="text-xs text-red-400 hover:text-red-300">
                     Remove Image
                  </button>
                )}

@@ -9,6 +9,7 @@ import { useLanguage } from "@/app/hooks/useLanguage";
 import { usePreferences } from "@/app/hooks/usePreferences";
 import { PATTERNS } from "@/app/utils/styles";
 import { useEffect, useState } from "react";
+import { useObjectUrl } from "../hooks/useObjectUrl";
 
 export function TransitionShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -22,23 +23,16 @@ export function TransitionShell({ children }: { children: React.ReactNode }) {
 
   // Prevent hydration mismatch by ensuring we only animate after mount
   const [mounted, setMounted] = useState(false);
-  const [bgImage, setBgImage] = useState<string | null>(null);
+
+  const bgImage = useObjectUrl(
+    preferences?.backgroundType === 'image' ? preferences.backgroundImage : null
+  );
 
   useEffect(() => {
     // Defer the setMounted to avoid synchronous setState warning and ensure we are client-side
     const timer = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(timer);
   }, []);
-
-  useEffect(() => {
-    if (preferences?.backgroundType === 'image' && preferences.backgroundImage) {
-        const url = URL.createObjectURL(preferences.backgroundImage);
-        setBgImage(url);
-        return () => URL.revokeObjectURL(url);
-    } else {
-        setBgImage(null);
-    }
-  }, [preferences?.backgroundType, preferences?.backgroundImage]);
 
   if (!mounted || !preferences) return <div className="bg-neutral-950 min-h-screen">{children}</div>;
 

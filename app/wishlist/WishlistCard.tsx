@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { GlassCard } from '@/app/components/ui/GlassCard';
 import * as LucideIcons from 'lucide-react';
 import { WishlistList } from '@/app/utils/db';
+import { useObjectUrl } from '@/app/hooks/useObjectUrl';
 
 interface WishlistCardProps {
   list: WishlistList;
@@ -23,19 +24,8 @@ export const WishlistCard: React.FC<WishlistCardProps> = ({
   // @ts-expect-error - Dynamic icon lookup
   const Icon = LucideIcons[list.iconName];
   const isEmoji = !Icon;
-  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (list.thumbnailBlob) {
-      const url = URL.createObjectURL(list.thumbnailBlob);
-      setThumbUrl(url);
-      return () => {
-        URL.revokeObjectURL(url);
-      };
-    } else {
-      setThumbUrl(null);
-    }
-  }, [list.thumbnailBlob]);
+  const thumbUrl = useObjectUrl(list.thumbnailBlob);
 
   return (
     <Link href={`/wishlist/${list.id}`} className="block group">

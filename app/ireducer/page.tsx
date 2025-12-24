@@ -21,9 +21,11 @@ import { processImage, estimateDimensionsForCompression, ImageProcessOptions } f
 import { saveToHistory, getHistory, deleteFromHistory, clearHistory } from "../utils/historyStorage";
 import { Header } from "../components/ui/Header";
 import { PageTransition } from "../components/ui/PageTransition";
+import { useObjectUrl } from "../hooks/useObjectUrl";
+import { HistoryItem } from "./HistoryItem";
 
 // Define locally to match history storage type
-interface HistoryItem {
+interface HistoryItemType {
   id: string;
   timestamp: number;
   originalName: string;
@@ -37,15 +39,18 @@ export default function ImageReducer() {
   const { preferences } = usePreferences();
 
   const [file, setFile] = useState<File | null>(null);
-  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [processedImage, setProcessedImage] = useState<{ url: string; blob: Blob } | null>(null);
+  const [processedImageBlob, setProcessedImageBlob] = useState<Blob | null>(null);
   const [mode, setMode] = useState<'resize' | 'compress'>('resize');
   const [resizeTarget, setResizeTarget] = useState<'small' | 'medium' | 'large'>('small');
   const [compressTarget, setCompressTarget] = useState<'200kb' | '500kb' | '1mb' | '2mb'>('200kb');
   const [estimates, setEstimates] = useState<Record<string, string>>({});
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [history, setHistory] = useState<HistoryItemType[]>([]);
+
+  // Generated URLs
+  const filePreviewUrl = useObjectUrl(file);
+  const processedImageUrl = useObjectUrl(processedImageBlob);
 
   // Theme Helpers
   const isDark = preferences ? getTextColor(preferences.backgroundColor) === 'text-white' : true;
@@ -64,10 +69,6 @@ export default function ImageReducer() {
   // Load history on mount
   useEffect(() => {
     loadHistory();
-    return () => {
-      // Cleanup previews
-      if (filePreviewUrl) URL.revokeObjectURL(filePreviewUrl);
-    };
   }, []);
 
   // Update estimates when file changes
@@ -124,9 +125,7 @@ export default function ImageReducer() {
   const handleFile = (f: File) => {
     if (f.type === "image/jpeg" || f.type === "image/png") {
       setFile(f);
-      const url = URL.createObjectURL(f);
-      setFilePreviewUrl(url);
-      setProcessedImage(null);
+      setProcessedImageBlob(null);
       setEstimates({});
     } else {
       alert("Only JPG and PNG files are allowed");
@@ -144,8 +143,7 @@ export default function ImageReducer() {
       };
 
       const processedBlob = await processImage(file, options);
-      const url = URL.createObjectURL(processedBlob);
-      setProcessedImage({ url, blob: processedBlob });
+      setProcessedImageBlob(processedBlob);
 
       await saveToHistory({
         originalName: file.name,
@@ -172,10 +170,6 @@ export default function ImageReducer() {
     await clearHistory();
     loadHistory();
   };
-
-  const getDownloadUrl = (blob: Blob) => {
-      return URL.createObjectURL(blob);
-  }
 
   // Icons mapping
   const ResizeIcons = {
@@ -231,7 +225,7 @@ export default function ImageReducer() {
                            <p className="text-sm font-medium truncate">{file.name}</p>
                            <p className="text-xs opacity-70">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                         </div>
-                        <button onClick={() => { setFile(null); setFilePreviewUrl(null); setProcessedImage(null); }} className="p-2 hover:bg-white/20 rounded-lg text-red-400">
+                        <button onClick={() => { setFile(null); setProcessedImageBlob(null); }} className="p-2 hover:bg-white/20 rounded-lg text-red-400">
                            <Trash2 className="w-4 h-4" />
                         </button>
                      </div>
@@ -256,20 +250,20 @@ export default function ImageReducer() {
               </h3>
 
               <div className={`aspect-video rounded-2xl border flex flex-col items-center justify-center relative overflow-hidden ${styles.glassInput} ${styles.border}`}>
-                 {processedImage ? (
+                 {processedImageBlob && processedImageUrl ? (
                     <>
                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                       <img src={processedImage.url} alt="Processed" className="absolute inset-0 w-full h-full object-contain p-2" />
+                       <img src={processedImageUrl} alt="Processed" className="absolute inset-0 w-full h-full object-contain p-2" />
                        <div className="absolute bottom-2 left-2 right-2 bg-green-500/90 backdrop-blur-md text-white p-3 rounded-xl flex justify-between items-center z-10">
                           <div>
                              <p className="text-sm font-bold">Done!</p>
                              <p className="text-xs opacity-90">
-                                {(processedImage.blob.size / 1024 / 1024).toFixed(2)} MB
-                                {file && <span className="ml-1 opacity-75">(-{(100 - (processedImage.blob.size / file.size) * 100).toFixed(0)}%)</span>}
+                                {(processedImageBlob.size / 1024 / 1024).toFixed(2)} MB
+                                {file && <span className="ml-1 opacity-75">(-{(100 - (processedImageBlob.size / file.size) * 100).toFixed(0)}%)</span>}
                              </p>
                           </div>
                           <a
-                            href={processedImage.url}
+                            href={processedImageUrl}
                             download={`processed-${file?.name}`}
                             className="p-2 bg-white text-green-600 rounded-lg hover:scale-105 transition-transform"
                           >
@@ -443,34 +437,13 @@ export default function ImageReducer() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {history.map((item) => (
-                <div key={item.id} className={`p-4 rounded-xl flex items-center gap-4 group transition-all duration-300 border ${styles.glassPanel} hover:bg-white/5`}>
-                   <div className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border ${styles.border} bg-black/5`}>
-                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                       <img src={getDownloadUrl(item.processedBlob)} alt="" className="w-full h-full object-cover" />
-                   </div>
-                   <div className="flex-1 min-w-0">
-                       <p className={`font-medium truncate transition-colors ${styles.textPrimary}`}>{item.originalName}</p>
-                       <p className={`text-xs ${styles.textSecondary}`}>
-                           {new Date(item.timestamp).toLocaleDateString()} • {item.type === 'resize' ? 'Resize' : 'Compress'}: {item.details}
-                       </p>
-                       <p className={`text-xs mt-1 ${styles.textSecondary}`}>{(item.processedBlob.size / 1024).toFixed(0)} KB</p>
-                   </div>
-                   <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                       <a
-                        href={getDownloadUrl(item.processedBlob)}
-                        download={`history-${item.originalName}`}
-                        className="p-2 text-orange-400 hover:bg-orange-500/10 rounded-lg transition-colors"
-                       >
-                           <Download className="w-4 h-4" />
-                       </a>
-                       <button
-                        onClick={() => handleDeleteHistory(item.id)}
-                        className="p-2 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                       >
-                           <Trash2 className="w-4 h-4" />
-                       </button>
-                   </div>
-                </div>
+                <HistoryItem
+                  key={item.id}
+                  item={item}
+                  onDelete={handleDeleteHistory}
+                  isDark={isDark}
+                  styles={styles}
+                />
               ))}
             </div>
           </div>
