@@ -57,7 +57,6 @@ export async function processImage(file: File, options: ImageProcessOptions): Pr
       maxSizeMB: targetMB,
       useWebWorker: true,
       initialQuality: 1.0, // Start high and let the library reduce
-      alwaysKeepResolution: true, // Try to keep resolution if possible, or should we reduce it?
       // "estimate dimensions that these images will stay to meet this weight requirement"
       // This implies we might need to reduce dimensions to hit the target weight.
       // browser-image-compression reduces resolution if needed to hit maxSizeMB.
