@@ -71,30 +71,45 @@ export default function ImageReducer() {
     loadHistory();
   }, []);
 
-  // Update estimates when file changes
+  // Reset estimates when file changes
   useEffect(() => {
-    if (file && mode === 'compress') {
-      updateEstimates(file);
+    setEstimates({});
+  }, [file]);
+
+  // Update estimates when mode or target changes
+  useEffect(() => {
+    if (file && mode === 'compress' && !estimates[compressTarget]) {
+      calculateEstimate(file, compressTarget);
     }
-  }, [file, mode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file, mode, compressTarget, estimates]);
 
   const loadHistory = async () => {
     const items = await getHistory();
     setHistory(items.sort((a, b) => b.timestamp - a.timestamp));
   };
 
-  const updateEstimates = async (f: File) => {
-    // Calculate for all targets to populate the UI immediately (better UX)
-    const targets = ['200kb', '500kb', '1mb', '2mb'] as const;
-    const newEstimates: Record<string, string> = {};
+  const calculateEstimate = useCallback(async (f: File, target: string) => {
+    // Check if we are already estimating this target to avoid duplicates
+    // We need to access the current estimates state, but estimates is a dependency of the effect calling this.
+    // To avoid stale closures or infinite loops if we include estimates in useCallback deps,
+    // we should rely on the effect's check or use a functional update pattern carefully.
+    // However, since this is called from an effect that checks `!estimates[target]`, we are safe.
+    // Actually, `estimates` in the effect dependency is fine.
 
-    // We can do this in parallel
-    await Promise.all(targets.map(async (target) => {
-      newEstimates[target] = await estimateDimensionsForCompression(f, target);
-    }));
+    setEstimates(prev => {
+        if (prev[target] === 'estimating') return prev;
+        return { ...prev, [target]: 'estimating' };
+    });
 
-    setEstimates(newEstimates);
-  };
+    try {
+      const estimatedDimensions = await estimateDimensionsForCompression(f, target);
+      setEstimates(prev => ({ ...prev, [target]: estimatedDimensions }));
+    } catch (error) {
+      console.error(error);
+      setEstimates(prev => ({ ...prev, [target]: 'Error' }));
+    }
+  }, []);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -369,12 +384,16 @@ export default function ImageReducer() {
                                     <div className={`font-medium ${compressTarget === opt ? 'text-white' : styles.textPrimary}`}>
                                        {opt}
                                     </div>
-                                    {estimates[opt] ? (
-                                        <div className={`text-xs mt-1 ${compressTarget === opt ? 'text-white/80' : styles.textSecondary}`}>
-                                           ~{estimates[opt]}
-                                        </div>
-                                    ) : (
-                                        <div className="h-4 w-12 bg-current opacity-10 rounded mt-1 animate-pulse" />
+                                    {compressTarget === opt && (
+                                       estimates[opt] === 'estimating' ? (
+                                           <div className="h-4 w-12 bg-current opacity-10 rounded mt-1 animate-pulse" />
+                                       ) : estimates[opt] ? (
+                                           <div className={`text-xs mt-1 ${compressTarget === opt ? 'text-white/80' : styles.textSecondary}`}>
+                                              ~{estimates[opt]}
+                                           </div>
+                                       ) : (
+                                           <div className="h-4 w-12 bg-current opacity-10 rounded mt-1 animate-pulse" />
+                                       )
                                     )}
                                  </div>
                               </div>
@@ -395,7 +414,7 @@ export default function ImageReducer() {
                                <span className="capitalize">{resizeTarget}</span>
                            )}
                         </div>
-                        {mode === 'compress' && estimates[compressTarget] && (
+                        {mode === 'compress' && estimates[compressTarget] && estimates[compressTarget] !== 'estimating' && (
                            <p className={`text-sm ${styles.textSecondary}`}>
                               New dim: {estimates[compressTarget]}
                            </p>
