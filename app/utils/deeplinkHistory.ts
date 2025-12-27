@@ -1,4 +1,4 @@
-import { openDB, DBSchema } from 'idb';
+import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 export interface DeeplinkHistoryItem {
   id: string;
@@ -18,20 +18,25 @@ interface DeeplinkDB extends DBSchema {
 const DB_NAME = 'deeplink-opener-db';
 const STORE_NAME = 'history';
 
-export async function initDB() {
-  return openDB<DeeplinkDB>(DB_NAME, 1, {
-    upgrade(db) {
-      const store = db.createObjectStore(STORE_NAME, {
-        keyPath: 'id',
-      });
-      store.createIndex('by-url', 'url');
-      store.createIndex('by-timestamp', 'timestamp');
-    },
-  });
-}
+let dbPromise: Promise<IDBPDatabase<DeeplinkDB>>;
+
+export const getDB = () => {
+  if (!dbPromise) {
+    dbPromise = openDB<DeeplinkDB>(DB_NAME, 1, {
+      upgrade(db) {
+        const store = db.createObjectStore(STORE_NAME, {
+          keyPath: 'id',
+        });
+        store.createIndex('by-url', 'url');
+        store.createIndex('by-timestamp', 'timestamp');
+      },
+    });
+  }
+  return dbPromise;
+};
 
 export async function saveDeeplink(url: string) {
-  const db = await initDB();
+  const db = await getDB();
   const tx = db.transaction(STORE_NAME, 'readwrite');
   const index = tx.store.index('by-url');
 
@@ -60,16 +65,16 @@ export async function saveDeeplink(url: string) {
 }
 
 export async function getDeeplinkHistory(): Promise<DeeplinkHistoryItem[]> {
-  const db = await initDB();
+  const db = await getDB();
   return db.getAllFromIndex(STORE_NAME, 'by-timestamp');
 }
 
 export async function deleteDeeplink(id: string) {
-  const db = await initDB();
+  const db = await getDB();
   await db.delete(STORE_NAME, id);
 }
 
 export async function clearDeeplinkHistory() {
-  const db = await initDB();
+  const db = await getDB();
   await db.clear(STORE_NAME);
 }

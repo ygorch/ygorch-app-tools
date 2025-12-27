@@ -1,4 +1,4 @@
-import { openDB, DBSchema } from 'idb';
+import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 interface ImageHistory {
   id: string;
@@ -20,19 +20,24 @@ interface ToolsDB extends DBSchema {
 const DB_NAME = 'ygors-tools-db';
 const STORE_NAME = 'history';
 
-export async function initDB() {
-  return openDB<ToolsDB>(DB_NAME, 1, {
-    upgrade(db) {
-      const store = db.createObjectStore(STORE_NAME, {
-        keyPath: 'id',
-      });
-      store.createIndex('by-timestamp', 'timestamp');
-    },
-  });
-}
+let dbPromise: Promise<IDBPDatabase<ToolsDB>>;
+
+export const getDB = () => {
+  if (!dbPromise) {
+    dbPromise = openDB<ToolsDB>(DB_NAME, 1, {
+      upgrade(db) {
+        const store = db.createObjectStore(STORE_NAME, {
+          keyPath: 'id',
+        });
+        store.createIndex('by-timestamp', 'timestamp');
+      },
+    });
+  }
+  return dbPromise;
+};
 
 export async function saveToHistory(historyItem: Omit<ImageHistory, 'id' | 'timestamp'>) {
-  const db = await initDB();
+  const db = await getDB();
   const id = crypto.randomUUID();
   const timestamp = Date.now();
 
@@ -57,16 +62,16 @@ export async function saveToHistory(historyItem: Omit<ImageHistory, 'id' | 'time
 }
 
 export async function getHistory(): Promise<ImageHistory[]> {
-  const db = await initDB();
+  const db = await getDB();
   return db.getAllFromIndex(STORE_NAME, 'by-timestamp');
 }
 
 export async function deleteFromHistory(id: string) {
-  const db = await initDB();
+  const db = await getDB();
   await db.delete(STORE_NAME, id);
 }
 
 export async function clearHistory() {
-  const db = await initDB();
+  const db = await getDB();
   await db.clear(STORE_NAME);
 }
