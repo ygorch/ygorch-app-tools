@@ -183,8 +183,14 @@ export default function PasteBinSession({ id }: { id: string }) {
       );
   }
 
+  // Reduced top padding from pt-20 md:pt-24 to pt-4 md:pt-6 since header is sticky
+  // and we don't have a fixed global header that overlaps this page on mobile?
+  // Actually, the request implies there IS a gap.
+  // The global layout might be adding padding via a wrapper? No, layout.tsx is clean.
+  // The 'pt-20' was likely intended to clear a fixed nav, but if we don't have one here or it's different, it creates a gap.
+
   return (
-    <div className="min-h-screen pt-20 md:pt-24 px-4 max-w-5xl mx-auto pb-12">
+    <div className="min-h-screen pt-4 md:pt-6 px-4 max-w-5xl mx-auto pb-12">
         <header className="flex items-center justify-between mb-6 sticky top-0 z-20 bg-[#111111]/80 backdrop-blur-md py-4 -mx-4 px-4 border-b border-white/5">
             <div className="flex items-center gap-4">
                 <Link href="/pbin" className="p-2 hover:bg-white/10 rounded-lg text-white/70 transition-colors">
