@@ -1,10 +1,16 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
-  console.warn('Supabase URL or Key is missing from environment variables.');
+let client: SupabaseClient | null = null;
+
+if (supabaseUrl && supabaseKey) {
+  client = createClient(supabaseUrl, supabaseKey);
+} else {
+  console.warn('Supabase URL or Key is missing from environment variables. Functionality will be limited.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = client;
+
+export const isSupabaseConfigured = () => !!client;

@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '@/app/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/app/lib/supabase';
 import { useLanguage } from '@/app/hooks/useLanguage';
 import Editor from './Editor';
 import { addHistory } from '@/app/lib/pastebin-db';
-import { Save, Share2, ArrowLeft, Loader2, Check, Trash2 } from 'lucide-react';
+import { Save, Share2, ArrowLeft, Loader2, Check, Trash2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -18,6 +18,7 @@ export default function PasteBinSession({ id }: { id: string }) {
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [dirty, setDirty] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,46 +39,76 @@ export default function PasteBinSession({ id }: { id: string }) {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from('paste_bins')
-        .select('content, updated_at')
-        .eq('id', id)
-        .single();
+      setError(null);
 
-      if (data) {
-        setContent(data.content);
-        setLastSaved(new Date(data.updated_at));
-        // Update history
-        updateLocalHistory(id, data.content);
-      } else {
-        // Not found, treat as new (empty). Will be created on first save.
-        setContent({});
+      if (!isSupabaseConfigured() || !supabase) {
+        setError('Supabase is not configured. Saving is disabled.');
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      try {
+        const { data, error } = await supabase
+            .from('paste_bins')
+            .select('content, updated_at')
+            .eq('id', id)
+            .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 is "Row not found"
+            console.error('Error fetching paste:', error);
+            setError('Error loading session.');
+        } else if (data) {
+            setContent(data.content);
+            setLastSaved(new Date(data.updated_at));
+            // Update history
+            updateLocalHistory(id, data.content);
+        } else {
+            // Not found, treat as new (empty). Will be created on first save.
+            setContent({});
+        }
+      } catch (err) {
+        console.error('Unexpected error loading paste:', err);
+        setError('An unexpected error occurred.');
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, [id, updateLocalHistory]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const save = useCallback(async (newContent: any) => {
-    setSaving(true);
-
-    const { error } = await supabase
-        .from('paste_bins')
-        .upsert({
-            id,
-            content: newContent,
-            updated_at: new Date().toISOString()
-        });
-
-    if (!error) {
-        setLastSaved(new Date());
-        setDirty(false);
-        updateLocalHistory(id, newContent);
-    } else {
-        console.error('Error saving:', error);
+    if (!isSupabaseConfigured() || !supabase) {
+        setError('Cannot save: Configuration missing.');
+        return;
     }
-    setSaving(false);
+
+    setSaving(true);
+    setError(null);
+
+    try {
+        const { error } = await supabase
+            .from('paste_bins')
+            .upsert({
+                id,
+                content: newContent,
+                updated_at: new Date().toISOString()
+            });
+
+        if (!error) {
+            setLastSaved(new Date());
+            setDirty(false);
+            updateLocalHistory(id, newContent);
+        } else {
+            console.error('Error saving:', error);
+            setError('Failed to save changes.');
+        }
+    } catch (err) {
+        console.error('Unexpected error saving:', err);
+        setError('Unexpected error while saving.');
+    } finally {
+        setSaving(false);
+    }
   }, [id, updateLocalHistory]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -124,6 +155,8 @@ export default function PasteBinSession({ id }: { id: string }) {
   };
 
   const handleDelete = async () => {
+      if (!isSupabaseConfigured() || !supabase) return;
+
       if (confirm('Are you sure you want to delete this session?')) {
           await supabase.from('paste_bins').delete().eq('id', id);
           router.push('/pbin');
@@ -148,7 +181,11 @@ export default function PasteBinSession({ id }: { id: string }) {
                 <div>
                     <h1 className="text-xl font-bold text-white font-mono tracking-wider">{id}</h1>
                     <div className="flex items-center gap-2 text-xs text-white/40">
-                        {saving ? (
+                        {error ? (
+                            <span className="flex items-center gap-1 text-red-400">
+                                <AlertTriangle size={10} /> {error}
+                            </span>
+                        ) : saving ? (
                             <span className="flex items-center gap-1 text-orange-400">
                                 <Loader2 size={10} className="animate-spin" /> {t.pasteBin?.saving || 'Saving...'}
                             </span>
@@ -166,8 +203,9 @@ export default function PasteBinSession({ id }: { id: string }) {
             <div className="flex items-center gap-2">
                 <button
                     onClick={handleManualSave}
-                    className="p-2 hover:bg-white/10 rounded-lg text-white/70 transition-colors hidden sm:block"
+                    className="p-2 hover:bg-white/10 rounded-lg text-white/70 transition-colors hidden sm:block disabled:opacity-50"
                     title="Save (Ctrl+S)"
+                    disabled={!!error}
                 >
                     <Save size={20} />
                 </button>
@@ -180,8 +218,9 @@ export default function PasteBinSession({ id }: { id: string }) {
                 </button>
                 <button
                     onClick={handleDelete}
-                    className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors ml-2"
+                    className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors ml-2 disabled:opacity-50"
                     title={t.pasteBin?.delete || 'Delete'}
+                    disabled={!!error}
                 >
                     <Trash2 size={20} />
                 </button>
