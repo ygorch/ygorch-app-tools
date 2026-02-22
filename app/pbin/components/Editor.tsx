@@ -53,57 +53,57 @@ const MenuBar = ({ editor }: { editor: any }) => {
   if (!editor) return null;
 
   return (
-    <div className="flex gap-2 p-2 mb-4 bg-white/5 border border-white/10 rounded-lg flex-wrap sticky top-24 z-10 backdrop-blur-md">
+    <div className="flex gap-2 p-2 bg-[#1a1a1a] md:bg-white/5 border-t border-white/10 md:border md:rounded-lg overflow-x-auto no-scrollbar md:mb-4 sticky md:top-24 md:z-10 backdrop-blur-md fixed bottom-0 left-0 right-0 z-50 md:relative md:bottom-auto md:left-auto md:right-auto justify-start md:justify-start safe-area-bottom pb-safe px-4 md:p-2">
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
-        className={`p-2 rounded transition-colors ${editor.isActive('bold') ? 'bg-orange-500 text-white' : 'text-white/70 hover:bg-white/10'}`}
+        className={`p-3 md:p-2 rounded-xl md:rounded transition-colors flex-shrink-0 ${editor.isActive('bold') ? 'bg-orange-500 text-white' : 'text-white/70 hover:bg-white/10'}`}
         title="Bold"
       >
-        <Bold size={18} />
+        <Bold size={20} />
       </button>
       <button
         onClick={() => editor.chain().focus().toggleItalic().run()}
         disabled={!editor.can().chain().focus().toggleItalic().run()}
-        className={`p-2 rounded transition-colors ${editor.isActive('italic') ? 'bg-orange-500 text-white' : 'text-white/70 hover:bg-white/10'}`}
+        className={`p-3 md:p-2 rounded-xl md:rounded transition-colors flex-shrink-0 ${editor.isActive('italic') ? 'bg-orange-500 text-white' : 'text-white/70 hover:bg-white/10'}`}
         title="Italic"
       >
-        <Italic size={18} />
+        <Italic size={20} />
       </button>
       <button
         onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`p-2 rounded transition-colors ${editor.isActive('bulletList') ? 'bg-orange-500 text-white' : 'text-white/70 hover:bg-white/10'}`}
+        className={`p-3 md:p-2 rounded-xl md:rounded transition-colors flex-shrink-0 ${editor.isActive('bulletList') ? 'bg-orange-500 text-white' : 'text-white/70 hover:bg-white/10'}`}
         title="Bullet List"
       >
-        <List size={18} />
+        <List size={20} />
       </button>
       <button
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={`p-2 rounded transition-colors ${editor.isActive('orderedList') ? 'bg-orange-500 text-white' : 'text-white/70 hover:bg-white/10'}`}
+        className={`p-3 md:p-2 rounded-xl md:rounded transition-colors flex-shrink-0 ${editor.isActive('orderedList') ? 'bg-orange-500 text-white' : 'text-white/70 hover:bg-white/10'}`}
         title="Ordered List"
       >
-        <ListOrdered size={18} />
+        <ListOrdered size={20} />
       </button>
       <button
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={`p-2 rounded transition-colors ${editor.isActive('blockquote') ? 'bg-orange-500 text-white' : 'text-white/70 hover:bg-white/10'}`}
+        className={`p-3 md:p-2 rounded-xl md:rounded transition-colors flex-shrink-0 ${editor.isActive('blockquote') ? 'bg-orange-500 text-white' : 'text-white/70 hover:bg-white/10'}`}
         title="Blockquote"
       >
-        <Quote size={18} />
+        <Quote size={20} />
       </button>
       <button
         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-        className={`p-2 rounded transition-colors ${editor.isActive('codeBlock') ? 'bg-orange-500 text-white' : 'text-white/70 hover:bg-white/10'}`}
+        className={`p-3 md:p-2 rounded-xl md:rounded transition-colors flex-shrink-0 ${editor.isActive('codeBlock') ? 'bg-orange-500 text-white' : 'text-white/70 hover:bg-white/10'}`}
         title="Code Block"
       >
-        <Code size={18} />
+        <Code size={20} />
       </button>
       <button
         onClick={addImage}
-        className="p-2 rounded transition-colors text-white/70 hover:bg-white/10"
+        className="p-3 md:p-2 rounded-xl md:rounded transition-colors text-white/70 hover:bg-white/10 flex-shrink-0"
         title="Add Image"
       >
-        <ImageIcon size={18} />
+        <ImageIcon size={20} />
       </button>
     </div>
   );
@@ -130,7 +130,7 @@ export default function Editor({ content, onChange, editable = true }: EditorPro
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-invert prose-orange max-w-none focus:outline-none min-h-[300px]',
+        class: 'prose prose-invert prose-orange max-w-none focus:outline-none min-h-[50vh] p-4 pb-24 md:pb-4 outline-none',
       },
     },
     immediatelyRender: false,
@@ -145,9 +145,14 @@ export default function Editor({ content, onChange, editable = true }: EditorPro
   }, [content, editor]);
 
   return (
-    <div className="w-full">
-      {editable && <MenuBar editor={editor} />}
-      <EditorContent editor={editor} />
+    <div className="w-full flex flex-col md:block relative">
+      <div className="order-1 md:order-2">
+        <EditorContent editor={editor} />
+      </div>
+
+      <div className="order-2 md:order-1">
+        {editable && <MenuBar editor={editor} />}
+      </div>
     </div>
   );
 }
