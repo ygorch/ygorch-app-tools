@@ -1,12 +1,11 @@
-
-import { Image, Gift, Smartphone } from "lucide-react";
+import { Image, Gift, Smartphone, FileText } from "lucide-react";
 
 export interface AppDefinition {
   id: string;
   icon: React.ElementType; // Lucide icon component
   href: string;
   color: string;
-  translationKey: 'imageReducer' | 'wishlist' | 'deeplinkOpener'; // Key to look up in translations
+  translationKey: 'imageReducer' | 'wishlist' | 'deeplinkOpener' | 'pasteBin'; // Key to look up in translations
   notification?: number;
 }
 
@@ -34,6 +33,14 @@ export const getApps = (t: any): AppDefinition[] => [
     icon: Smartphone,
     color: "bg-white/5 backdrop-blur-xl border border-white/10 group-hover:bg-white/10 group-hover:border-white/20",
     href: "/deeplink",
+    notification: 0,
+  },
+  {
+    id: "paste-bin",
+    translationKey: "pasteBin",
+    icon: FileText,
+    color: "bg-white/5 backdrop-blur-xl border border-white/10 group-hover:bg-white/10 group-hover:border-white/20",
+    href: "/pbin",
     notification: 0,
   },
 ];
