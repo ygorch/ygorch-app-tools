@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, isSupabaseConfigured } from '@/app/lib/supabase';
 import { useLanguage } from '@/app/hooks/useLanguage';
 import Editor from './Editor';
-import { addHistory } from '@/app/lib/pastebin-db';
+import { addHistory, removeHistory } from '@/app/lib/pastebin-db';
 import { Save, Share2, ArrowLeft, Loader2, Check, Trash2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -29,7 +29,7 @@ export default function PasteBinSession({ id }: { id: string }) {
         if (content?.content?.[0]?.content?.[0]?.text) {
             title = content.content[0].content[0].text.substring(0, 30);
         }
-    } catch (_) {
+    } catch (_e) {
       // ignore
     }
     await addHistory(id, title);
@@ -157,8 +157,20 @@ export default function PasteBinSession({ id }: { id: string }) {
   const handleDelete = async () => {
       if (!isSupabaseConfigured() || !supabase) return;
 
-      if (confirm('Are you sure you want to delete this session?')) {
-          await supabase.from('paste_bins').delete().eq('id', id);
+      if (confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
+          // Delete from Supabase
+          const { error } = await supabase.from('paste_bins').delete().eq('id', id);
+
+          if (error) {
+              console.error('Error deleting from Supabase:', error);
+              alert('Failed to delete from server.');
+              return;
+          }
+
+          // Delete from local history
+          await removeHistory(id);
+
+          // Redirect
           router.push('/pbin');
       }
   };

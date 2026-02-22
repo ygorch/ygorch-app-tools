@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/app/hooks/useLanguage';
 import { generateId } from '@/app/utils/id-generator';
-import { getHistory } from '@/app/lib/pastebin-db';
-import { Plus, Search, Clock, ExternalLink } from 'lucide-react';
+import { getHistory, removeHistory } from '@/app/lib/pastebin-db';
+import { Plus, Search, Clock, ExternalLink, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PasteBinHome() {
@@ -16,13 +16,17 @@ export default function PasteBinHome() {
   const [history, setHistory] = useState<any[]>([]);
 
   useEffect(() => {
+    loadHistory();
+  }, []);
+
+  const loadHistory = () => {
     getHistory().then((items) => {
       // Sort by date descending
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const sorted = items.sort((a: any, b: any) => b.lastAccess - a.lastAccess);
       setHistory(sorted);
     });
-  }, []);
+  };
 
   const handleNewSession = () => {
     const id = generateId();
@@ -33,6 +37,16 @@ export default function PasteBinHome() {
     e.preventDefault();
     if (code.trim().length > 0) {
       router.push(`/pbin/${code.trim()}`);
+    }
+  };
+
+  const handleDeleteFromHistory = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (confirm('Remove from history? This only removes the link from your device, not the session itself.')) {
+        await removeHistory(id);
+        loadHistory();
     }
   };
 
@@ -93,15 +107,24 @@ export default function PasteBinHome() {
                         href={`/pbin/${item.id}`}
                         className="flex items-center justify-between bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 p-4 rounded-xl transition-all group"
                     >
-                        <div>
-                            <div className="font-medium text-white group-hover:text-orange-400 transition-colors">
+                        <div className="flex-1 min-w-0 pr-4">
+                            <div className="font-medium text-white group-hover:text-orange-400 transition-colors truncate">
                                 {item.title || item.id}
                             </div>
                             <div className="text-xs text-white/40 font-mono mt-1">
                                 /${item.id} • {new Date(item.lastAccess).toLocaleDateString()} {new Date(item.lastAccess).toLocaleTimeString()}
                             </div>
                         </div>
-                        <ExternalLink size={18} className="text-white/20 group-hover:text-white/70" />
+                        <div className="flex items-center gap-2">
+                             <button
+                                onClick={(e) => handleDeleteFromHistory(e, item.id)}
+                                className="p-2 text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors z-10"
+                                title="Remove from history"
+                            >
+                                <Trash2 size={16} />
+                            </button>
+                            <ExternalLink size={18} className="text-white/20 group-hover:text-white/70" />
+                        </div>
                     </Link>
                 ))}
             </div>

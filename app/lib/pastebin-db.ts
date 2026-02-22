@@ -39,3 +39,8 @@ export const getHistory = async () => {
   const db = await getDB();
   return db.getAllFromIndex('history', 'by-date');
 };
+
+export const removeHistory = async (id: string) => {
+  const db = await getDB();
+  await db.delete('history', id);
+};
