@@ -10,9 +10,10 @@ interface HeaderProps {
   backUrl?: string;
   className?: string;
   children?: React.ReactNode;
+  titleAs?: "h1" | "span" | "div";
 }
 
-export function Header({ title, backUrl = "/", className, children }: HeaderProps) {
+export function Header({ title, backUrl = "/", className, children, titleAs: TitleTag = "span" }: HeaderProps) {
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
@@ -39,7 +40,7 @@ export function Header({ title, backUrl = "/", className, children }: HeaderProp
 
         {title && (
             <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                <span className="text-xl font-serif tracking-wide text-white/90">{title}</span>
+                <TitleTag className="text-xl font-serif tracking-wide text-white/90">{title}</TitleTag>
             </div>
         )}
 

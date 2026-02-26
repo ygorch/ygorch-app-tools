@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useLanguage } from "@/app/hooks/useLanguage";
@@ -24,10 +23,12 @@ export function HomeScreen() {
   const textColor = preferences ? getTextColor(preferences.backgroundColor) : 'text-white';
 
   return (
-    <main className="flex min-h-screen flex-col items-center pt-32 px-4 fixed inset-0 overflow-y-auto z-0">
+    <main className="flex min-h-screen flex-col items-center pt-32 px-4 fixed inset-0 overflow-y-auto z-0" aria-hidden={!!activeAppId}>
       <button
         onClick={() => setIsSettingsOpen(true)}
         className={`fixed top-6 right-6 p-3 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all z-20 ${activeAppId ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+        aria-hidden={!!activeAppId}
+        tabIndex={activeAppId ? -1 : 0}
       >
         <Settings size={24} className={textColor} />
       </button>
