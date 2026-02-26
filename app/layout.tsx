@@ -5,6 +5,7 @@ import "./globals.css";
 import { LanguageProvider } from "./hooks/useLanguage";
 import { PreferencesProvider } from "./hooks/usePreferences";
 import { TransitionShell } from "./components/TransitionShell";
+import { Analytics } from "@vercel/analytics/next";
 
 const instrumentSerif = Instrument_Serif({
   weight: "400",
@@ -40,6 +41,7 @@ export default function RootLayout({
             </TransitionShell>
           </PreferencesProvider>
         </LanguageProvider>
+        <Analytics />
       </body>
     </html>
   );
