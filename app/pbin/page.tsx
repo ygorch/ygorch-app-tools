@@ -54,7 +54,7 @@ export default function PasteBinHome() {
 
   return (
     <div className="min-h-screen">
-      <Header title={t.pasteBin?.title || 'Paste Bin'} />
+      <Header title={t.pasteBin?.title || 'Paste Bin'} titleAs="h1" />
       <PageTransition className="pt-20 md:pt-24 px-4 max-w-4xl mx-auto pb-12">
         <div className="text-center mb-12">
           {/* Header takes care of the title */}
