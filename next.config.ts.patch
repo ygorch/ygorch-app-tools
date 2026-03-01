@@ -1,0 +1,18 @@
+--- next.config.ts
++++ next.config.ts
+@@ -28,6 +28,15 @@
+         permanent: true,
+       },
+     ]
+   },
++  webpack: (config) => {
++    // Ignore node-specific modules when building for the browser
++    config.resolve.alias = {
++      ...config.resolve.alias,
++      "onnxruntime-node$": false,
++    };
++    return config;
++  },
+ };
+
+ export default pwaConfig(nextConfig);

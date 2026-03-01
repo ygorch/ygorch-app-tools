@@ -1,4 +1,5 @@
-import type { NextConfig } from "next";
+const fs = require('fs');
+const content = `import type { NextConfig } from "next";
 import withPWA from "@ducanh2912/next-pwa";
 
 const pwaConfig = withPWA({
@@ -41,3 +42,5 @@ const nextConfig: NextConfig = {
 };
 
 export default pwaConfig(nextConfig);
+`;
+fs.writeFileSync('next.config.ts', content);
