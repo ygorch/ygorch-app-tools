@@ -5,6 +5,7 @@ const DB_VERSION = 1;
 
 export interface CallTranscription {
   id: string;
+  title?: string;
   date: number;
   speaker1Name: string;
   speaker2Name: string;

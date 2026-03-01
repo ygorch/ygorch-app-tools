@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Mic, Download, Play, Square, Loader2, Cpu } from "lucide-react";
+import { Mic, Download, Play, Square, Loader2, Cpu, Pencil, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Header } from "../../components/ui/Header";
@@ -34,6 +34,8 @@ export default function CallResultPage() {
   const micAudioRef = useRef<HTMLAudioElement>(null);
   const sysAudioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editTitleValue, setEditTitleValue] = useState("");
 
   useEffect(() => {
     loadData();
@@ -51,6 +53,7 @@ export default function CallResultPage() {
       }
 
       setData(record);
+      setEditTitleValue(record.title || "");
       setLoading(false);
 
       // Convert WEBM Blobs to WAV Blobs immediately for download/playback
@@ -119,6 +122,14 @@ export default function CallResultPage() {
     newWorker.postMessage({ type: 'load', modelId: "Xenova/whisper-tiny" });
   };
 
+  const handleSaveTitle = async () => {
+    if (!data) return;
+    const updatedRecord = { ...data, title: editTitleValue.trim() || undefined };
+    await saveTranscription(updatedRecord);
+    setData(updatedRecord);
+    setIsEditingTitle(false);
+  };
+
   const getTextColorClass = () => preferences?.theme === "dark" ? "text-white" : "text-black";
   const getSubTextColorClass = () => preferences?.theme === "dark" ? "text-white/60" : "text-black/60";
   const getBgClass = () => preferences?.theme === "dark" ? "bg-white/5" : "bg-black/5";
@@ -173,9 +184,33 @@ export default function CallResultPage() {
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
            <div>
-              <h2 className="text-2xl font-serif font-medium mb-1">
-                {data.speaker1Name} <span className="text-orange-500 mx-2">vs</span> {data.speaker2Name}
-              </h2>
+              {isEditingTitle ? (
+                <div className="flex items-center gap-2 mb-1">
+                  <input
+                    type="text"
+                    value={editTitleValue}
+                    onChange={(e) => setEditTitleValue(e.target.value)}
+                    placeholder={`${data.speaker1Name} vs ${data.speaker2Name}`}
+                    className={`px-3 py-1 rounded-lg bg-transparent border ${getBorderClass()} focus:border-orange-500 focus:outline-none text-xl font-serif font-medium w-full max-w-xs`}
+                    autoFocus
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSaveTitle(); }}
+                  />
+                  <button onClick={handleSaveTitle} className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors">
+                    <Check className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <h2 className="text-2xl font-serif font-medium mb-1 flex items-center gap-3 group">
+                  {data.title ? data.title : <>{data.speaker1Name} <span className="text-orange-500 mx-0.5">vs</span> {data.speaker2Name}</>}
+                  <button
+                    onClick={() => setIsEditingTitle(true)}
+                    className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-white/10 rounded-lg transition-all"
+                    title="Editar Título"
+                  >
+                    <Pencil className="w-4 h-4 opacity-50 hover:opacity-100" />
+                  </button>
+                </h2>
+              )}
               <p className={`text-sm ${getSubTextColorClass()}`}>
                 Gravado em {new Date(data.date).toLocaleString('pt-BR')}
               </p>
@@ -196,8 +231,31 @@ export default function CallResultPage() {
         </div>
 
         {/* Hidden Audio Elements for Playback */}
-        {micUrl && <audio ref={micAudioRef} src={micUrl} onEnded={() => setIsPlaying(false)} />}
-        {sysUrl && <audio ref={sysAudioRef} src={sysUrl} />}
+        {/* Individual Players */}
+        <div className={`p-6 rounded-3xl border backdrop-blur-md ${getBgClass()} ${getBorderClass()} grid grid-cols-1 md:grid-cols-2 gap-6`}>
+          {wavMic && (
+            <div>
+              <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                <Mic className="w-4 h-4 text-orange-500" />
+                Áudio: {data.speaker1Name}
+              </h3>
+              <audio controls className="w-full h-10 outline-none rounded-xl bg-black/20" src={micUrl || undefined} />
+            </div>
+          )}
+          {wavSys && (
+            <div>
+              <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-orange-500" />
+                Áudio: {data.speaker2Name}
+              </h3>
+              <audio controls className="w-full h-10 outline-none rounded-xl bg-black/20" src={sysUrl || undefined} />
+            </div>
+          )}
+        </div>
+
+        {/* Hidden Master Audio Elements for Sync Playback */}
+        {micUrl && <audio ref={micAudioRef} src={micUrl || undefined} onEnded={() => setIsPlaying(false)} />}
+        {sysUrl && <audio ref={sysAudioRef} src={sysUrl || undefined} />}
 
         {/* Transcription Panel */}
         <div className={`p-6 rounded-3xl border backdrop-blur-md ${getBgClass()} ${getBorderClass()}`}>

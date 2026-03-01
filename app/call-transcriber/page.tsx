@@ -101,7 +101,7 @@ export default function CallTranscriberHome() {
                           </span>
                         </div>
                         <h3 className="font-medium text-lg mb-1">
-                          {t.speaker1Name} <span className="text-orange-500 mx-2">vs</span> {t.speaker2Name}
+                          {t.title ? t.title : <>{t.speaker1Name} <span className="text-orange-500 mx-2">vs</span> {t.speaker2Name}</>}
                         </h3>
                         <div className="flex gap-2">
                            <span className="text-xs px-2 py-1 rounded-md bg-white/10">
