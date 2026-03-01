@@ -59,6 +59,9 @@ export const en = {
     key: "Key",
     value: "Value",
   },
+  callTranscriber: {
+    title: "Call Transcriber",
+  },
   pasteBin: {
     title: "Paste Bin",
     newSession: "New Session",
@@ -140,6 +143,9 @@ export const pt = {
     key: "Chave",
     value: "Valor",
   },
+  callTranscriber: {
+    title: "Call Transcriber",
+  },
   pasteBin: {
     title: "Paste Bin",
     newSession: "Nova Sessão",
@@ -220,6 +226,9 @@ export const es = {
     saveAsPreset: "Guardar como Preajuste",
     key: "Clave",
     value: "Valor",
+  },
+  callTranscriber: {
+    title: "Call Transcriber",
   },
   pasteBin: {
     title: "Paste Bin",

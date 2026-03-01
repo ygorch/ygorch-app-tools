@@ -1,0 +1,49 @@
+
+> temp-app@0.1.0 build
+> next build --webpack
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   ▲ Next.js 16.0.7 (webpack)
+
+   Creating an optimized production build ...
+ ✓ (pwa) Compiling for server...
+ ✓ (pwa) Compiling for server...
+ ✓ (pwa) Compiling for client (static)...
+ ○ (pwa) Service worker: /app/public/sw.js
+ ○ (pwa)   URL: /sw.js
+ ○ (pwa)   Scope: /
+ ⚠ Compiled with warnings in 14.8s
+
+/_next/static/media/ort-wasm-simd-threaded.jsep.03bc89f8.wasm is 21.6 MB, and won't be precached. Configure maximumFileSizeToCacheInBytes to change this limit.
+
+   Running TypeScript ...
+   Collecting page data using 3 workers ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   Generating static pages using 3 workers (0/10) ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   Generating static pages using 3 workers (2/10)
+   Generating static pages using 3 workers (4/10)
+   Generating static pages using 3 workers (7/10)
+ ✓ Generating static pages using 3 workers (10/10) in 1198.4ms
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /call-transcriber
+├ ƒ /call-transcriber/[id]
+├ ○ /call-transcriber/record
+├ ○ /deeplink
+├ ○ /ireducer
+├ ○ /pbin
+├ ƒ /pbin/[id]
+├ ○ /wishlist
+└ ƒ /wishlist/[id]
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
