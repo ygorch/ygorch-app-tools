@@ -96,3 +96,50 @@ export async function processAudioFile(blob: Blob) {
 
   return { wavBlob, audioDataForModel };
 }
+
+// Given two audio blobs recorded simultaneously, ensures their start and end
+// are aligned. If one blob started capturing data later than the other,
+// this function pads the shorter one with silence at the START to align them.
+// Assuming both recorders stopped at exactly the same time.
+export async function processAndSyncAudioFiles(blob1: Blob, blob2: Blob) {
+  const [buffer1, buffer2] = await Promise.all([
+     decodeAudioBlob(blob1),
+     decodeAudioBlob(blob2)
+  ]);
+
+  const length1 = buffer1.length;
+  const length2 = buffer2.length;
+  const maxLength = Math.max(length1, length2);
+  const sampleRate = buffer1.sampleRate; // Should be 16kHz for both
+
+  const newContext = new (window.AudioContext || (window as any /* eslint-disable-line @typescript-eslint/no-explicit-any */).webkitAudioContext)({ sampleRate });
+
+  // Create new padded buffers
+  const paddedBuffer1 = newContext.createBuffer(1, maxLength, sampleRate);
+  const paddedBuffer2 = newContext.createBuffer(1, maxLength, sampleRate);
+
+  const channel1 = paddedBuffer1.getChannelData(0);
+  const channel2 = paddedBuffer2.getChannelData(0);
+
+  // Pad at the start by writing at the end
+  const offset1 = maxLength - length1;
+  const offset2 = maxLength - length2;
+
+  channel1.set(buffer1.getChannelData(0), offset1);
+  channel2.set(buffer2.getChannelData(0), offset2);
+
+  // Generate WAVs
+  const wavBlob1 = audioBufferToWavBlob(paddedBuffer1);
+  const wavBlob2 = audioBufferToWavBlob(paddedBuffer2);
+
+  // Generate Float32Arrays for Whisper
+  const audioDataForModel1 = audioBufferToFloat32Array(paddedBuffer1);
+  const audioDataForModel2 = audioBufferToFloat32Array(paddedBuffer2);
+
+  return {
+      wavBlob1,
+      wavBlob2,
+      audioDataForModel1,
+      audioDataForModel2,
+  };
+}

@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "../../components/ui/Header";
 import { usePreferences } from "../../hooks/usePreferences";
 import { getTranscriptionById, saveTranscription, CallTranscription } from "../../utils/transcriberDb";
-import { processAudioFile } from "../../utils/audioProcessing";
+import { processAndSyncAudioFiles } from "../../utils/audioProcessing";
 
 // Use our object URL hook to prevent leaks
 import { useObjectUrl } from "../../hooks/useObjectUrl";
@@ -54,15 +54,14 @@ export default function CallResultPage() {
       setLoading(false);
 
       // Convert WEBM Blobs to WAV Blobs immediately for download/playback
-      const { wavBlob: wav1, audioDataForModel: data1 } = await processAudioFile(record.audioBlob1);
-      const { wavBlob: wav2, audioDataForModel: data2 } = await processAudioFile(record.audioBlob2);
+      const { wavBlob1, wavBlob2, audioDataForModel1, audioDataForModel2 } = await processAndSyncAudioFiles(record.audioBlob1, record.audioBlob2);
 
-      setWavMic(wav1);
-      setWavSys(wav2);
+      setWavMic(wavBlob1);
+      setWavSys(wavBlob2);
 
       // If it doesn't have JSON, start transcription worker
       if (!record.mergedTranscriptionJson) {
-         startTranscriptionWorker(data1, data2, record);
+         startTranscriptionWorker(audioDataForModel1, audioDataForModel2, record);
       }
     } catch (err) {
       console.error(err);
