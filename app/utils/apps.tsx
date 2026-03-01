@@ -1,11 +1,11 @@
-import { Image, Gift, Smartphone, FileText } from "lucide-react";
+import { Image, Gift, Smartphone, FileText, Mic } from "lucide-react";
 
 export interface AppDefinition {
   id: string;
   icon: React.ElementType; // Lucide icon component
   href: string;
   color: string;
-  translationKey: 'imageReducer' | 'wishlist' | 'deeplinkOpener' | 'pasteBin'; // Key to look up in translations
+  translationKey: 'imageReducer' | 'wishlist' | 'deeplinkOpener' | 'pasteBin' | 'callTranscriber'; // Key to look up in translations
   notification?: number;
 }
 
@@ -41,6 +41,14 @@ export const getApps = (t: any): AppDefinition[] => [
     icon: FileText,
     color: "bg-white/5 backdrop-blur-xl border border-white/10 group-hover:bg-white/10 group-hover:border-white/20",
     href: "/pbin",
+    notification: 0,
+  },
+  {
+    id: "call-transcriber",
+    translationKey: "callTranscriber",
+    icon: Mic,
+    color: "bg-white/5 backdrop-blur-xl border border-white/10 group-hover:bg-white/10 group-hover:border-white/20",
+    href: "/call-transcriber",
     notification: 0,
   },
 ];

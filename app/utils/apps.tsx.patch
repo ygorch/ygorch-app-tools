@@ -1,0 +1,15 @@
+--- app/utils/apps.tsx
++++ app/utils/apps.tsx
+@@ -32,6 +32,13 @@
+     href: "/pbin",
+     notification: 0,
+   },
++  {
++    id: "call-transcriber",
++    translationKey: "callTranscriber",
++    icon: Mic,
++    color: "bg-white/5 backdrop-blur-xl border border-white/10 group-hover:bg-white/10 group-hover:border-white/20",
++    href: "/call-transcriber",
++    notification: 0,
++  },
+ ];
