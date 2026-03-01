@@ -30,14 +30,6 @@ const nextConfig: NextConfig = {
       },
     ]
   },
-  webpack: (config) => {
-    // Ignore node-specific modules to prevent Vercel 250MB limit error due to onnxruntime-node
-    config.resolve.alias = {
-        ...config.resolve.alias,
-        "onnxruntime-node$": false,
-    }
-    return config;
-  },
 };
 
 export default pwaConfig(nextConfig);

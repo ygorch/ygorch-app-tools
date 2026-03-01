@@ -11,11 +11,6 @@ import { saveTranscription, CallTranscription } from "../../utils/transcriberDb"
 import { v4 as uuidv4 } from "uuid";
 
 // HuggingFace Transformers
-import { env } from "@huggingface/transformers";
-
-// Desativa cache local de Node e usa IndexedDB nativo do HF
-env.allowLocalModels = false;
-env.useBrowserCache = true;
 
 const MODELS = [
   { id: "Xenova/whisper-tiny", name: "Tiny", size: "~75 MB", desc: "Mais rápido, menos preciso." },
@@ -57,31 +52,28 @@ export default function RecordPage() {
   const getBgClass = () => preferences?.theme === "dark" ? "bg-white/10" : "bg-black/5";
   const getBorderClass = () => preferences?.theme === "dark" ? "border-white/20" : "border-black/20";
 
-  // Pre-download Model (Just to check/cache, using dummy instanciation or preload API if available,
-  // but HF transformers loads on first pipeline call. We can create a dummy pipeline or just inform the user)
   const handlePreDownload = async () => {
     setModelStatus("downloading");
-    try {
-      // Lazy load pipeline
-      const { pipeline } = await import("@huggingface/transformers");
 
-      const transcriber = await pipeline("automatic-speech-recognition", modelId, {
-        progress_callback: (info: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
-          if (info.status === "progress") {
-             // info.progress is a percentage (0-100)
-             setDownloadProgress(Math.round(info.progress));
-          }
-        },
-      });
+    // Uses the web worker to download and cache the model via WebGPU
+    const worker = new Worker("/whisper-worker.js", { type: "module" });
 
-      // Cleanup transcriber just to free memory, it's cached in IDB now
-      await transcriber.dispose();
-      setModelStatus("ready");
-    } catch (err) {
-      console.error("Error pre-downloading model:", err);
-      setModelStatus("idle");
-      alert("Falha ao baixar o modelo. Verifique sua conexão.");
-    }
+    worker.onmessage = (e) => {
+      const msg = e.data;
+      if (msg.status === "progress") {
+         setDownloadProgress(Math.round(msg.progress));
+      } else if (msg.status === "ready") {
+         setModelStatus("ready");
+         worker.terminate();
+      } else if (msg.status === "error") {
+         console.error(msg.message);
+         setModelStatus("idle");
+         alert("Falha ao baixar o modelo. Verifique sua conexão.");
+         worker.terminate();
+      }
+    };
+
+    worker.postMessage({ type: 'load', modelId });
   };
 
   // Start Recording

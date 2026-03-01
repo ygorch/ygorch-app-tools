@@ -1,12 +1,13 @@
-import { pipeline, env } from '@huggingface/transformers';
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3/dist/transformers.js';
 
+// Desativa cache local de Node e usa IndexedDB nativo do HF
 env.allowLocalModels = false;
 env.useBrowserCache = true;
 
 // Keep track of the pipeline instance
-let transcriber: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+let transcriber = null;
 
-self.onmessage = async (e: MessageEvent) => {
+self.onmessage = async (e) => {
   const { type, modelId, language, audioData1, audioData2, speaker1Name, speaker2Name } = e.data;
 
   if (type === 'load') {
@@ -17,15 +18,15 @@ self.onmessage = async (e: MessageEvent) => {
 
         transcriber = await pipeline('automatic-speech-recognition', modelId, {
             device: 'webgpu',
-            progress_callback: (info: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
+            progress_callback: (info) => {
               if (info.status === 'progress') {
-                  self.postMessage({ status: 'progress', message: `Baixando modelo: ${Math.round(info.progress)}%` });
+                  self.postMessage({ status: 'progress', message: `Baixando modelo: ${Math.round(info.progress)}%`, progress: info.progress });
               }
             }
         });
       }
       self.postMessage({ status: 'ready' });
-    } catch (error: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
+    } catch (error) {
       self.postMessage({ status: 'error', message: `Erro ao carregar modelo: ${error.message}` });
     }
   }
@@ -57,8 +58,8 @@ self.onmessage = async (e: MessageEvent) => {
       self.postMessage({ status: 'merging', message: 'Mesclando e formatando resultados...' });
 
       // 3. Merge & Sort Chunks
-      const chunks1 = result1.chunks.map((c: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => ({ ...c, speaker: speaker1Name, source: 'mic' }));
-      const chunks2 = result2.chunks.map((c: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => ({ ...c, speaker: speaker2Name, source: 'system' }));
+      const chunks1 = result1.chunks.map((c) => ({ ...c, speaker: speaker1Name, source: 'mic' }));
+      const chunks2 = result2.chunks.map((c) => ({ ...c, speaker: speaker2Name, source: 'system' }));
 
       // Merge arrays
       const mergedChunks = [...chunks1, ...chunks2];
@@ -87,7 +88,7 @@ self.onmessage = async (e: MessageEvent) => {
 
       self.postMessage({ status: 'complete', result: JSON.stringify(finalJson, null, 2) });
 
-    } catch (error: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
+    } catch (error) {
       self.postMessage({ status: 'error', message: `Erro na transcrição: ${error.message}` });
     }
   }

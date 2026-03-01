@@ -72,7 +72,7 @@ export default function CallResultPage() {
 
   const startTranscriptionWorker = (audio1: Float32Array, audio2: Float32Array, record: CallTranscription) => {
     // We only create worker once
-    const newWorker = new Worker(new URL('../worker.ts', import.meta.url), { type: 'module' });
+    const newWorker = new Worker("/whisper-worker.js", { type: "module" });
 
     newWorker.onmessage = async (e) => {
       const msg = e.data;
